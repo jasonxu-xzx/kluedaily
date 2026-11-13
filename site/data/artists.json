@@ -28,5 +28,11 @@
   "riize": {"name":"RIIZE","gender":"M","debut":2023,"aliases":["라이즈"]},
   "kard": {"name":"KARD","gender":"X","debut":2017,"aliases":["카드"]},
   "allday": {"name":"ALLDAY PROJECT","gender":"X","debut":2025,"aliases":["올데이 프로젝트","adp"]},
-  "xg": {"name":"XG","gender":"F","debut":2022,"aliases":[]}
+  "xg": {"name":"XG","gender":"F","debut":2022,"aliases":[]},
+  "nmixx": {"name":"NMIXX","gender":"F","debut":2022,"aliases":["엔믹스"]},
+  "iu": {"name":"IU","gender":"F","debut":2008,"aliases":["아이유","이지은"]},
+  "jennie": {"name":"JENNIE","gender":"F","debut":2016,"parent":"bp","aliases":["제니"]},
+  "rose": {"name":"ROSÉ","gender":"F","debut":2016,"parent":"bp","aliases":["로제","rose"]},
+  "boa": {"name":"BoA","gender":"F","debut":2000,"aliases":["보아"]},
+  "kep1er": {"name":"Kep1er","gender":"F","debut":2022,"aliases":["케플러","kepler"]}
 }
