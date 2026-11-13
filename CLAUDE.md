@@ -38,7 +38,10 @@ history and launch checklist.
   year, month, season, MV views (tiers), length, genre, label, title letters, title words,
   first letter, last letter, title language, career stage.
 - Month and season never appear on the same day (`CLASH`).
-- Feedback: 🟩 exact, 🟨 close, ⬜ off; ↑↓ for numbers; ← → for letters (alphabetical).
+- Feedback: exact = Sky Blue (🟦 in share text), close = Coral Glow (🟧), off = pale sand (⬜);
+  ↑↓ for numbers; ← → for letters (alphabetical).
+- Look: single light theme from the Klue palette (Honeydew bg, Soft Peach, Coral Glow, Tomato Jam accent,
+  Sky Blue); tokens at the top of `site/assets/style.css`. No dark mode, by choice.
 - Daily reset at **midnight KST**. Case #1 = 2026-11-20 (KST), set by `LAUNCH_DAY` in engine.js
   (temporary launch date). Before launch, `gameDay()` holds at launch day: Case #1 is playable now
   and the first refresh is midnight KST into Nov 21 (Case #2).

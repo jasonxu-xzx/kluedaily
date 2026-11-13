@@ -20,7 +20,7 @@ function Shot($src, $out, $size) {
 # Favicon page: SVG scaled to 180px on its own blue
 $iconHtml = Join-Path $env:TEMP "cd-icon.html"
 $svg = Get-Content -Raw (Join-Path $root "site\favicon.svg")
-"<!doctype html><html><body style='margin:0;width:180px;height:180px;background:#3047d6'>" + ($svg -replace '<svg ', '<svg width="180" height="180" ') + "</body></html>" | Out-File -Encoding utf8 $iconHtml
+"<!doctype html><html><body style='margin:0;width:180px;height:180px;background:#C93638'>" + ($svg -replace '<svg ', '<svg width="180" height="180" ') + "</body></html>" | Out-File -Encoding utf8 $iconHtml
 
 Shot (Join-Path $root "tools\og.html") (Join-Path $root "site\og.png") "1200,630"
 Shot $iconHtml (Join-Path $root "site\apple-touch-icon.png") "180,180"

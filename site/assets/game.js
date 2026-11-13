@@ -42,7 +42,7 @@ const store = {
 };
 
 // ---------- State ----------
-const EMOJI = { hit: "🟩", near: "🟨", off: "⬜" };
+const EMOJI = { hit: "🟦", near: "🟧", off: "⬜" };   // matches the board: Sky Blue exact, Coral close
 let mode = "daily", filter = "all", puz, guesses = [], over = false;
 const FILTER_LABEL = { all: "", girl: " · Girl groups", boy: " · Boy groups" };
 const input = $("guess"), sugg = $("sugg"), board = $("board"), endEl = $("end"), msg = $("msg");

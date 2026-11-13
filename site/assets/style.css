@@ -1,26 +1,18 @@
-﻿:root {
-  --bg: #f4f5fa; --surface: #ffffff; --ink: #161a33; --muted: #5d6280; --line: #dfe1ec;
-  --accent: #3047d6; --accent-ink: #ffffff;
-  --hit: #23a165; --hit-ink: #ffffff; --near: #e2ae1c; --near-ink: #2b2104; --off: #e6e7ef; --off-ink: #3b3f5c;
-  --shadow: 0 1px 2px rgba(22,26,51,.06), 0 8px 24px rgba(22,26,51,.06);
+﻿/* Klue palette: Honeydew #F6FFEA · Soft Peach #FFDE96 · Coral Glow #FA855A · Tomato Jam #C93638 · Sky Blue #62C4DA.
+   One light theme on purpose (no dark mode). Feedback: Sky Blue = exact, Coral Glow = close, pale sand = off
+   (blue/orange also reads for colour-blind players). */
+:root {
+  --honeydew: #F6FFEA; --peach: #FFDE96; --coral: #FA855A; --tomato: #C93638; --sky: #62C4DA;
+  --bg: var(--honeydew); --surface: #ffffff; --ink: #3a1416; --muted: #7a4a44; --line: #f0dfc4;
+  --accent: var(--tomato); --accent-ink: #ffffff; --soft: var(--peach);
+  --hit: var(--sky); --hit-ink: #0d3640; --near: var(--coral); --near-ink: #3a1416; --off: #f3ebdd; --off-ink: #6b4a42;
+  --shadow: 0 1px 2px rgba(201,54,56,.06), 0 8px 24px rgba(201,54,56,.07);
   --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
 }
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #0f1122; --surface: #181b33; --ink: #eceefa; --muted: #9da2c2; --line: #2a2e4d;
-    --accent: #7b8cff; --accent-ink: #0f1122; --hit: #2fb574; --hit-ink: #06170e; --near: #e7b632; --near-ink: #231a02;
-    --off: #2a2e4a; --off-ink: #c9cce3; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #0f1122; --surface: #181b33; --ink: #eceefa; --muted: #9da2c2; --line: #2a2e4d;
-  --accent: #7b8cff; --accent-ink: #0f1122; --hit: #2fb574; --hit-ink: #06170e; --near: #e7b632; --near-ink: #231a02;
-  --off: #2a2e4a; --off-ink: #c9cce3; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
-  color-scheme: dark;
-}
+[hidden] { display: none !important; }   /* components below set display:flex, which would otherwise override hidden */
 * { box-sizing: border-box; }
 body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 48px; }
@@ -45,7 +37,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .diff b { color: var(--ink); }
 .clues { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .clue { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.clue.fixed { background: var(--off); border-color: transparent; }
+.clue.fixed { background: var(--soft); border-color: transparent; }
+.clue.fixed .rule { color: var(--ink); opacity: .75; }
 .clue .ic { font-size: 18px; line-height: 1.1; }
 .clue .nm { font-weight: 700; font-size: 13px; line-height: 1.2; }
 .clue .rule { font-size: 11.5px; color: var(--muted); line-height: 1.3; }
@@ -78,6 +71,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .cell .k { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; opacity: .8; }
 .cell .v { font-size: 13px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .cell .ar { font-family: var(--f-mono); font-weight: 600; font-size: 13px; line-height: 1; }
+.cell.off { box-shadow: inset 0 0 0 1px var(--line); }
 .cell.hit { background: var(--hit); color: var(--hit-ink); }
 .cell.near { background: var(--near); color: var(--near-ink); }
 .reveal .cell { animation: flip .42s ease both; }
@@ -104,7 +98,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 /* Standalone-page additions */
 html { -webkit-text-size-adjust: 100%; }
 body { margin: 0; }
-.logo .beta { background: var(--off); color: var(--off-ink); }
+.logo { color: var(--tomato); }
+.logo .beta { background: var(--soft); color: var(--ink); }
 .foot-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .foot a { color: var(--ink); text-underline-offset: 2px; }
 .foot a:hover { color: var(--accent); }
