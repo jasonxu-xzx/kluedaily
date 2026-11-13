@@ -47,9 +47,10 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 - [x] Stable daily schedule (`data/schedule.json`, `npm run schedule` after every data change)
 - [x] Weekly GitHub Action running `npm run check` so the schedule never runs out
 - [x] GitHub repo → Cloudflare Pages → kluedaily.com (+ www redirect)
-- [ ] Cloudflare: SSL/TLS → Edge Certificates → "Always Use HTTPS" on (http:// currently doesn't redirect)
-- [ ] PostHog: filter out test traffic (`$host` contains localhost / pages.dev); build retention + share-rate insights
-- [ ] Phone check on the live site: play, share, link preview card in Discord/iMessage
+- [x] Cloudflare: "Always Use HTTPS" on (http:// → https://)
+- [x] PostHog: internal/test filter (`$host` doesn't contain localhost, 127.0.0.1, pages.dev)
+- [x] Phone check on the live site: play, share, link preview card
+- [ ] PostHog insights: D1/D7 retention, share rate, win rate + avg guesses by difficulty
 
 **Soft launch (late Nov)**
 - [ ] 20–50 players: friends + one fan Discord, for one week
