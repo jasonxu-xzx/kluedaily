@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Klue: daily K-pop song guessing game</title>
+<meta name="description" content="Guess the mystery K-pop song in 8 tries. Artist is always a clue; the other four change every day at midnight KST. Girl group and boy group filters.">
+<meta name="theme-color" content="#3047d6">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<link rel="canonical" href="https://kluedaily.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Klue">
+<meta property="og:title" content="Klue: guess today's K-pop song">
+<meta property="og:description" content="8 tries. Artist plus four clues that change every day at midnight KST.">
+<meta property="og:url" content="https://kluedaily.com/">
+<meta property="og:image" content="https://kluedaily.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Klue: a grid of green, yellow and grey clue tiles">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Klue: guess today's K-pop song">
+<meta name="twitter:description" content="8 tries. Artist plus four clues that change every day at midnight KST.">
+<meta name="twitter:image" content="https://kluedaily.com/og.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script src="assets/config.js"></script>
+<script src="assets/analytics.js"></script>
+<script type="module" src="assets/game.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1 class="logo">KLUE<span class="chip beta">BETA</span></h1>
+      <div class="caseline" id="caseline">Case #1</div>
+    </div>
+  </header>
+
+  <p class="loading" id="loading">Loading today's case…</p>
+
+  <main id="game" hidden>
+    <div class="controls">
+      <div class="modes" role="group" aria-label="Game mode">
+        <button id="modeDaily" aria-pressed="true">Daily case</button>
+        <button id="modePractice" aria-pressed="false">Practice</button>
+      </div>
+      <div class="modes" role="group" aria-label="Song pool">
+        <button data-f="all" aria-pressed="true">All</button>
+        <button data-f="girl" aria-pressed="false">Girl groups</button>
+        <button data-f="boy" aria-pressed="false">Boy groups</button>
+      </div>
+    </div>
+
+    <section class="lineup" aria-labelledby="lineupTitle">
+      <div class="lineup-head">
+        <h2 id="lineupTitle">Today's clues</h2>
+        <span class="diff" id="diff"></span>
+      </div>
+      <div class="clues" id="clues"></div>
+    </section>
+
+    <div class="guessbar">
+      <label for="guess"><span>Guess the mystery song</span><span id="count">0 / 8</span></label>
+      <input id="guess" type="text" autocomplete="off" spellcheck="false" placeholder="Type a song or artist — 영어 / 한글 OK" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
+      <ul class="sugg" id="sugg" role="listbox" hidden></ul>
+    </div>
+    <div class="msg" id="msg" aria-live="polite"></div>
+
+    <section class="end" id="end" hidden aria-live="polite"></section>
+    <div class="board" id="board"></div>
+  </main>
+
+  <footer class="foot">
+    <div class="legend">
+      <span><i class="sw" style="background:var(--hit)"></i>Exact</span>
+      <span><i class="sw" style="background:var(--near)"></i>Close</span>
+      <span><i class="sw" style="background:var(--off);outline:1px solid var(--line)"></i>Off</span>
+      <span>↑↓ answer is higher / lower</span>
+      <span>← → answer is earlier / later in the alphabet</span>
+    </div>
+    <p>Artist is always a clue. The other four change every day at midnight Korea time, and the day's lineup sets the difficulty: easier early in the week, harder by Sunday. Each filter has its own daily case.</p>
+    <p>Filters: co-ed groups (KARD, ALLDAY PROJECT) count as both girl and boy groups; soloists follow their gender.</p>
+    <p>Beta: new songs are added every week. Label means the company at release; genre uses six fixed buckets.</p>
+    <div class="foot-links">
+      <a id="reportLink" href="#" target="_blank" rel="noopener" hidden>Report a data error</a>
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </footer>
+</div>
+</body>
+</html>

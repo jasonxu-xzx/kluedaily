@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "chart-detective",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["tools/serve.mjs", "8787"],
+      "port": 8787
+    }
+  ]
+}

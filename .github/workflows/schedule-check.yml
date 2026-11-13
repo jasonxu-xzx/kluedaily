@@ -1,0 +1,20 @@
+# Fails (and GitHub emails you) if data/schedule.json is invalid or has fewer than 14 days left.
+# Fix: run `npm run schedule` locally, commit, push.
+name: Schedule check
+
+on:
+  push:
+    paths: ["site/data/**", "site/assets/engine.js", "tools/schedule.mjs"]
+  schedule:
+    - cron: "0 0 * * 1"   # Mondays 09:00 KST
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run check

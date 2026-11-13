@@ -1,0 +1,11 @@
+{
+  "name": "klue",
+  "private": true,
+  "type": "module",
+  "description": "Daily K-pop song-guessing game. Static site in site/; no build step, no dependencies.",
+  "scripts": {
+    "serve": "node tools/serve.mjs",
+    "schedule": "node tools/schedule.mjs",
+    "check": "node tools/schedule.mjs --check"
+  }
+}

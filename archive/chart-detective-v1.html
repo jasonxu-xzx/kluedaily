@@ -1,0 +1,484 @@
+<title>Chart Detective</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: single centered play column (max 640px) — masthead, mode switch, guess input, stacked guess cards with a 6-cell attribute grid, end-of-case panel. */
+:root {
+  --bg: #f4f5fa;
+  --surface: #ffffff;
+  --ink: #161a33;
+  --muted: #5d6280;
+  --line: #dfe1ec;
+  --accent: #3047d6;
+  --accent-ink: #ffffff;
+  --hit: #23a165;
+  --near: #e2ae1c;
+  --near-ink: #2b2104;
+  --off: #e6e7ef;
+  --off-ink: #3b3f5c;
+  --hit-ink: #ffffff;
+  --shadow: 0 1px 2px rgba(22,26,51,.06), 0 8px 24px rgba(22,26,51,.06);
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1122; --surface: #181b33; --ink: #eceefa; --muted: #9da2c2; --line: #2a2e4d;
+    --accent: #7b8cff; --accent-ink: #0f1122; --hit: #2fb574; --near: #e7b632; --near-ink: #231a02;
+    --off: #2a2e4a; --off-ink: #c9cce3; --hit-ink: #06170e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1122; --surface: #181b33; --ink: #eceefa; --muted: #9da2c2; --line: #2a2e4d;
+  --accent: #7b8cff; --accent-ink: #0f1122; --hit: #2fb574; --near: #e7b632; --near-ink: #231a02;
+  --off: #2a2e4a; --off-ink: #c9cce3; --hit-ink: #06170e;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+}
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+button { font: inherit; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Masthead */
+.mast { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.logo { font-family: var(--f-display); font-weight: 800; font-size: clamp(22px, 6vw, 30px); letter-spacing: -.01em; line-height: 1; margin: 0; }
+.logo .chip { display: inline-flex; align-items: center; gap: 2px; font-family: var(--f-mono); font-size: 12px; font-weight: 600; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 3px 6px; vertical-align: 6px; margin-left: 6px; letter-spacing: 0; }
+.caseline { font-family: var(--f-mono); font-size: 12px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin-top: 6px; }
+.mast-actions { display: flex; gap: 6px; }
+.icon-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 600; }
+
+/* Mode switch */
+.modes { display: inline-flex; background: var(--off); border-radius: 10px; padding: 3px; gap: 3px; align-self: flex-start; }
+.modes button { border: 0; background: transparent; color: var(--off-ink); padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 13px; }
+.modes button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+/* Help */
+.help { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.help h2 { font-family: var(--f-display); font-weight: 700; font-size: 14px; margin: 0; letter-spacing: .02em; }
+.help p { margin: 0; color: var(--muted); max-width: 62ch; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
+.sw { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+.help dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; font-size: 13px; }
+.help dt { font-family: var(--f-mono); font-weight: 600; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; padding-top: 2px; }
+.help dd { margin: 0; color: var(--muted); }
+
+/* Input */
+.guessbar { position: relative; display: flex; flex-direction: column; gap: 6px; }
+.guessbar label { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); display: flex; justify-content: space-between; }
+.guessbar input { width: 100%; font: inherit; font-size: 16px; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); color: var(--ink); }
+.guessbar input:disabled { opacity: .55; }
+.sugg { position: absolute; top: 100%; left: 0; right: 0; margin: 4px 0 0; padding: 4px; list-style: none; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); z-index: 5; max-height: 320px; overflow-y: auto; }
+.sugg li { padding: 9px 10px; border-radius: 7px; cursor: pointer; display: flex; justify-content: space-between; gap: 10px; }
+.sugg li[aria-selected="true"], .sugg li:hover { background: var(--off); }
+.sugg .t { font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sugg .a { color: var(--muted); font-size: 13px; white-space: nowrap; }
+.sugg .none { color: var(--muted); cursor: default; }
+.msg { min-height: 20px; font-size: 13px; color: var(--muted); }
+
+/* Guess cards */
+.board { display: flex; flex-direction: column; gap: 10px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 0 2px; }
+.card-head .song { font-weight: 700; min-width: 0; }
+.card-head .song span { color: var(--muted); font-weight: 500; }
+.card-head .n { font-family: var(--f-mono); font-size: 12px; color: var(--muted); white-space: nowrap; }
+.cells { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.cell { border-radius: 7px; padding: 6px 4px 7px; text-align: center; display: flex; flex-direction: column; gap: 2px; justify-content: center; min-height: 54px; background: var(--off); color: var(--off-ink); }
+.cell .k { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; opacity: .8; }
+.cell .v { font-size: 12.5px; font-weight: 600; line-height: 1.2; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.cell .ar { font-family: var(--f-mono); font-weight: 600; font-size: 13px; line-height: 1; }
+.cell.hit { background: var(--hit); color: var(--hit-ink); }
+.cell.near { background: var(--near); color: var(--near-ink); }
+.card.won { border-color: var(--hit); }
+.reveal .cell { animation: flip .42s ease both; }
+@keyframes flip { from { transform: rotateX(80deg); opacity: .3; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .reveal .cell { animation: none; } }
+@media (max-width: 460px) {
+  .cells { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+.empty { border: 1.5px dashed var(--line); border-radius: 12px; padding: 18px; color: var(--muted); font-size: 14px; text-align: center; }
+
+/* End panel */
+.end { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; box-shadow: var(--shadow); }
+.end h2 { font-family: var(--f-display); font-weight: 700; font-size: 20px; margin: 0; text-wrap: balance; }
+.end .ans { font-size: 15px; }
+.end .ans b { font-size: 17px; }
+.share { font-family: var(--f-mono); font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; white-space: pre; overflow-x: auto; margin: 0; line-height: 1.45; }
+.row-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn { border: 0; background: var(--accent); color: var(--accent-ink); font-weight: 700; padding: 10px 16px; border-radius: 10px; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center; }
+.stats div b { display: block; font-family: var(--f-display); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stats div span { font-size: 11px; color: var(--muted); font-family: var(--f-mono); text-transform: uppercase; letter-spacing: .06em; }
+.dist { display: flex; flex-direction: column; gap: 4px; }
+.dist .r { display: grid; grid-template-columns: 14px 1fr; gap: 8px; align-items: center; font-family: var(--f-mono); font-size: 12px; }
+.dist .bar { background: var(--off); color: var(--off-ink); border-radius: 4px; padding: 1px 6px; text-align: right; min-width: 22px; width: var(--w); }
+.dist .bar.cur { background: var(--accent); color: var(--accent-ink); }
+.next { font-family: var(--f-mono); font-size: 13px; color: var(--muted); }
+.foot { font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; max-width: 62ch; }
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <h1 class="logo">CHART DETECTIVE<span class="chip">▲1</span></h1>
+      <div class="caseline" id="caseline">Case #1</div>
+    </div>
+    <div class="mast-actions">
+      <button class="icon-btn" id="helpBtn" aria-expanded="false" aria-controls="help">How to play</button>
+    </div>
+  </header>
+
+  <div class="modes" role="group" aria-label="Game mode">
+    <button id="modeDaily" aria-pressed="true">Daily case</button>
+    <button id="modePractice" aria-pressed="false">Practice</button>
+  </div>
+
+  <section class="help" id="help" hidden>
+    <h2>Find the mystery K-pop song in 8 guesses</h2>
+    <p>Every guess shows how its stats compare with the answer. Arrows point toward the answer: ↑ means the answer's number is higher.</p>
+    <div class="legend">
+      <span><i class="sw" style="background:var(--hit)"></i>Exact match</span>
+      <span><i class="sw" style="background:var(--near)"></i>Close</span>
+      <span><i class="sw" style="background:var(--off);outline:1px solid var(--line)"></i>Off</span>
+    </div>
+    <dl>
+      <dt>Year</dt><dd>Original release year. Close = within 1 year.</dd>
+      <dt>Artist</dt><dd>Close = related act (member solo, subunit, parent group).</dd>
+      <dt>Label</dt><dd>Company at time of release. Close = same parent family (e.g. HYBE).</dd>
+      <dt>Type</dt><dd>Title track (promoted on music shows) or B-side.</dd>
+      <dt>Length</dt><dd>Song length. Close = within 10 seconds.</dd>
+      <dt>Views</dt><dd>Official MV views, in tiers. Close = neighboring tier.</dd>
+    </dl>
+    <p>A new case opens every day at midnight Korea time.</p>
+  </section>
+
+  <div class="guessbar">
+    <label for="guess"><span>Your guess</span><span id="count">0 / 8</span></label>
+    <input id="guess" type="text" autocomplete="off" spellcheck="false" placeholder="Type a song or artist — 영어 / 한글 OK" role="combobox" aria-expanded="false" aria-controls="sugg" aria-autocomplete="list">
+    <ul class="sugg" id="sugg" role="listbox" hidden></ul>
+  </div>
+  <div class="msg" id="msg" aria-live="polite"></div>
+
+  <section class="end" id="end" hidden aria-live="polite"></section>
+
+  <div class="board" id="board"></div>
+
+  <p class="foot">Prototype for playtesting. Song data is a small sample entered from memory, so view tiers and song lengths are approximate and unverified. If something looks wrong, note it for the next data pass.</p>
+</div>
+
+<script>
+(() => {
+  // ---------- Data ----------
+  const ARTISTS = {
+    bts: { name: "BTS" }, jk: { name: "Jung Kook", parent: "bts" }, jimin: { name: "Jimin", parent: "bts" },
+    bp: { name: "BLACKPINK" }, lisa: { name: "LISA", parent: "bp" },
+    nj: { name: "NewJeans" }, aespa: { name: "aespa" }, rv: { name: "Red Velvet" }, twice: { name: "TWICE" },
+    skz: { name: "Stray Kids" }, ive: { name: "IVE" }, lsf: { name: "LE SSERAFIM" }, gidle: { name: "(G)I-DLE" },
+    ikon: { name: "iKON" }, exo: { name: "EXO" }, kai: { name: "KAI", parent: "exo" }, snsd: { name: "Girls' Generation", alias: ["소녀시대", "snsd"] },
+    bigbang: { name: "BIGBANG", alias: ["빅뱅"] }, psy: { name: "PSY", alias: ["싸이"] }, svt: { name: "SEVENTEEN", alias: ["세븐틴", "svt"] },
+    txt: { name: "TXT", alias: ["tomorrow x together", "투모로우바이투게더"] }, ff: { name: "FIFTY FIFTY" },
+    n127: { name: "NCT 127", parent: "nct" }, ndream: { name: "NCT DREAM", parent: "nct" },
+    ateez: { name: "ATEEZ", alias: ["에이티즈"] }, enha: { name: "ENHYPEN", alias: ["엔하이픈"] }, riize: { name: "RIIZE", alias: ["라이즈"] },
+  };
+  Object.assign(ARTISTS.bts, { alias: ["방탄소년단", "bangtan"] });
+  Object.assign(ARTISTS.bp, { alias: ["블랙핑크"] });
+  Object.assign(ARTISTS.nj, { alias: ["뉴진스"] });
+  Object.assign(ARTISTS.twice, { alias: ["트와이스"] });
+  Object.assign(ARTISTS.skz, { alias: ["스트레이 키즈", "skz"] });
+  Object.assign(ARTISTS.ive, { alias: ["아이브"] });
+  Object.assign(ARTISTS.lsf, { alias: ["르세라핌", "lesserafim"] });
+  Object.assign(ARTISTS.gidle, { alias: ["여자아이들", "gidle", "i-dle"] });
+  Object.assign(ARTISTS.rv, { alias: ["레드벨벳"] });
+  Object.assign(ARTISTS.jk, { alias: ["jungkook", "정국"] });
+  Object.assign(ARTISTS.jimin, { alias: ["지민"] });
+
+  // [title, artist, year, company, family|null, isTitle, seconds, viewTier, aliases]
+  // viewTier: 0 No MV, 1 <10M, 2 10–50M, 3 50–100M, 4 100–300M, 5 300M–1B, 6 1B+
+  const RAW = [
+    ["Dynamite", "bts", 2020, "Big Hit Ent.", "HYBE", 1, 199, 6, ["다이너마이트"]],
+    ["Butter", "bts", 2021, "BIGHIT MUSIC", "HYBE", 1, 164, 5, ["버터"]],
+    ["Boy With Luv", "bts", 2019, "Big Hit Ent.", "HYBE", 1, 229, 6, ["작은 것들을 위한 시", "small things"]],
+    ["Spring Day", "bts", 2017, "Big Hit Ent.", "HYBE", 1, 274, 5, ["봄날"]],
+    ["Pied Piper", "bts", 2017, "Big Hit Ent.", "HYBE", 0, 245, 0, []],
+    ["Seven", "jk", 2023, "BIGHIT MUSIC", "HYBE", 1, 184, 5, ["세븐"]],
+    ["Like Crazy", "jimin", 2023, "BIGHIT MUSIC", "HYBE", 1, 212, 4, []],
+    ["DDU-DU DDU-DU", "bp", 2018, "YG", null, 1, 209, 6, ["뚜두뚜두", "ddu du"]],
+    ["Kill This Love", "bp", 2019, "YG", null, 1, 189, 6, []],
+    ["How You Like That", "bp", 2020, "YG", null, 1, 181, 6, ["hylt"]],
+    ["Pink Venom", "bp", 2022, "YG", null, 1, 187, 5, ["핑크 베놈"]],
+    ["Typa Girl", "bp", 2022, "YG", null, 0, 177, 0, []],
+    ["LALISA", "lisa", 2021, "YG", null, 1, 200, 5, ["라리사"]],
+    ["Hype Boy", "nj", 2022, "ADOR", "HYBE", 1, 179, 4, []],
+    ["Ditto", "nj", 2022, "ADOR", "HYBE", 1, 185, 4, ["디토"]],
+    ["Super Shy", "nj", 2023, "ADOR", "HYBE", 1, 154, 4, []],
+    ["Next Level", "aespa", 2021, "SM", null, 1, 221, 5, ["넥스트 레벨"]],
+    ["Supernova", "aespa", 2024, "SM", null, 1, 178, 4, ["슈퍼노바"]],
+    ["Psycho", "rv", 2019, "SM", null, 1, 211, 5, ["사이코"]],
+    ["Bad Boy", "rv", 2018, "SM", null, 1, 211, 4, []],
+    ["TT", "twice", 2016, "JYP", null, 1, 213, 5, ["티티"]],
+    ["FANCY", "twice", 2019, "JYP", null, 1, 213, 5, ["팬시"]],
+    ["God's Menu", "skz", 2020, "JYP", null, 1, 166, 5, ["神메뉴", "신메뉴", "gods menu"]],
+    ["S-Class", "skz", 2023, "JYP", null, 1, 175, 4, ["특", "s class"]],
+    ["LOVE DIVE", "ive", 2022, "Starship", "Kakao Ent.", 1, 177, 4, ["러브 다이브"]],
+    ["I AM", "ive", 2023, "Starship", "Kakao Ent.", 1, 183, 4, []],
+    ["ANTIFRAGILE", "lsf", 2022, "Source Music", "HYBE", 1, 184, 4, ["안티프래자일"]],
+    ["Sour Grapes", "lsf", 2022, "Source Music", "HYBE", 0, 179, 0, []],
+    ["Queencard", "gidle", 2023, "Cube", null, 1, 161, 4, ["퀸카"]],
+    ["TOMBOY", "gidle", 2022, "Cube", null, 1, 174, 4, ["톰보이"]],
+    ["Love Scenario", "ikon", 2018, "YG", null, 1, 209, 5, ["사랑을 했다"]],
+    ["Growl", "exo", 2013, "SM", null, 1, 202, 4, ["으르렁"]],
+    ["Rover", "kai", 2023, "SM", null, 1, 164, 3, []],
+    ["Gee", "snsd", 2009, "SM", null, 1, 200, 4, ["지"]],
+    ["Fantastic Baby", "bigbang", 2012, "YG", null, 1, 230, 5, []],
+    ["Gangnam Style", "psy", 2012, "YG", null, 1, 219, 6, ["강남스타일"]],
+    ["Very Nice", "svt", 2016, "Pledis", null, 1, 214, 3, ["아주 nice", "아주 나이스"]],
+    ["Super", "svt", 2023, "Pledis", "HYBE", 1, 201, 4, ["손오공", "son goku"]],
+    ["Sugar Rush Ride", "txt", 2023, "BIGHIT MUSIC", "HYBE", 1, 194, 4, []],
+    ["Cupid", "ff", 2023, "ATTRAKT", null, 1, 175, 4, ["큐피드"]],
+    ["Fact Check", "n127", 2023, "SM", null, 1, 211, 3, ["불가사의"]],
+    ["Candy", "ndream", 2022, "SM", null, 1, 216, 3, ["캔디"]],
+    ["Guerrilla", "ateez", 2022, "KQ", null, 1, 189, 3, ["게릴라"]],
+    ["Bite Me", "enha", 2023, "BELIFT LAB", "HYBE", 1, 158, 3, []],
+    ["Get A Guitar", "riize", 2023, "SM", null, 1, 176, 3, []],
+  ];
+  const TIERS = ["No MV", "<10M", "10–50M", "50–100M", "100–300M", "300M–1B", "1B+"];
+  const SONGS = RAW.map((r, i) => ({
+    id: i, title: r[0], artist: r[1], year: r[2], company: r[3], family: r[4],
+    isTitle: !!r[5], sec: r[6], tier: r[7], aliases: r[8],
+  }));
+
+  const norm = s => s.toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, "");
+  SONGS.forEach(s => {
+    const a = ARTISTS[s.artist];
+    s.keys = [s.title, ...s.aliases].map(norm);
+    s.artistKeys = [a.name, ...(a.alias || [])].map(norm);
+  });
+
+  // ---------- Daily schedule (resets at midnight KST) ----------
+  const DAY = 86400000, KST = 9 * 3600000;
+  const LAUNCH = Date.UTC(2026, 10, 13) / DAY; // Case #1 = Nov 13, 2026 (KST)
+  const kstDay = () => Math.floor((Date.now() + KST) / DAY);
+  function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  const order = (() => { const ids = SONGS.map(s => s.id), r = mulberry32(2027); for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; } return ids; })();
+  const caseNo = () => Math.max(1, kstDay() - LAUNCH + 1);
+  const dailyAnswer = () => { const k = kstDay() - LAUNCH, n = order.length; return SONGS[order[((k % n) + n) % n]]; };
+
+  // ---------- Storage (best effort) ----------
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem("cd:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v) { try { localStorage.setItem("cd:" + k, JSON.stringify(v)); } catch {} },
+  };
+
+  // ---------- Comparison ----------
+  const related = (a, b) => {
+    if (a === b) return false;
+    const A = ARTISTS[a], B = ARTISTS[b];
+    return A.parent === b || B.parent === a || (A.parent && A.parent === B.parent);
+  };
+  const fmtLen = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  function compare(g, ans) {
+    const num = (gv, av, near) => gv === av ? { st: "hit" } : { st: Math.abs(gv - av) <= near ? "near" : "off", ar: av > gv ? "↑" : "↓" };
+    const year = num(g.year, ans.year, 1);
+    const len = num(g.sec, ans.sec, 10);
+    let views;
+    if (g.tier === ans.tier) views = { st: "hit" };
+    else if (g.tier === 0 || ans.tier === 0) views = { st: "off" };
+    else views = { st: Math.abs(g.tier - ans.tier) === 1 ? "near" : "off", ar: ans.tier > g.tier ? "↑" : "↓" };
+    return [
+      { k: "Year", v: g.year, ...year },
+      { k: "Artist", v: ARTISTS[g.artist].name, st: g.artist === ans.artist ? "hit" : related(g.artist, ans.artist) ? "near" : "off" },
+      { k: "Label", v: g.company, st: g.company === ans.company ? "hit" : (g.family && g.family === ans.family) ? "near" : "off" },
+      { k: "Type", v: g.isTitle ? "Title" : "B-side", st: g.isTitle === ans.isTitle ? "hit" : "off" },
+      { k: "Length", v: fmtLen(g.sec), ...len },
+      { k: "Views", v: TIERS[g.tier], ...views },
+    ];
+  }
+  const EMOJI = { hit: "🟩", near: "🟨", off: "⬜" };
+
+  // ---------- State ----------
+  const MAX = 8;
+  let mode = "daily", answer, guesses = [], over = false;
+  const $ = id => document.getElementById(id);
+  const input = $("guess"), sugg = $("sugg"), board = $("board"), endEl = $("end"), msg = $("msg");
+
+  function startDaily() {
+    mode = "daily"; answer = dailyAnswer();
+    const saved = store.get("day-" + kstDay(), null);
+    guesses = saved ? saved.guesses.map(id => SONGS[id]) : [];
+    over = saved ? saved.over : false;
+    render(false);
+  }
+  function startPractice() {
+    mode = "practice";
+    let pick; do { pick = SONGS[Math.floor(Math.random() * SONGS.length)]; } while (SONGS.length > 1 && answer && pick.id === answer.id);
+    answer = pick; guesses = []; over = false;
+    render(false);
+  }
+
+  // ---------- Rendering ----------
+  function cardHTML(g, i) {
+    const won = g.id === answer.id;
+    const cells = compare(g, answer).map((c, j) =>
+      `<div class="cell ${c.st}" style="animation-delay:${j * 70}ms"><span class="k">${c.k}</span><span class="v">${esc(c.v)}</span>${c.ar ? `<span class="ar" aria-label="answer is ${c.ar === "↑" ? "higher" : "lower"}">${c.ar}</span>` : ""}</div>`).join("");
+    return `<article class="card${won ? " won" : ""}"><div class="card-head"><div class="song">${esc(g.title)} <span>— ${esc(ARTISTS[g.artist].name)}</span></div><div class="n">${i + 1}/${MAX}</div></div><div class="cells">${cells}</div></article>`;
+  }
+  function render(animateLast) {
+    $("caseline").textContent = mode === "daily" ? `Case #${caseNo()} · resets midnight KST` : "Practice · random song";
+    $("modeDaily").setAttribute("aria-pressed", mode === "daily");
+    $("modePractice").setAttribute("aria-pressed", mode === "practice");
+    $("count").textContent = `${guesses.length} / ${MAX}`;
+    const cards = guesses.map(cardHTML).reverse();
+    board.innerHTML = cards.length ? cards.join("") : `<div class="empty">No guesses yet. Start with a song you know well. The stats will point you toward the answer.</div>`;
+    if (animateLast && board.firstElementChild) board.firstElementChild.classList.add("reveal");
+    input.disabled = over; input.value = ""; closeSugg();
+    input.placeholder = over ? "Case closed" : "Type a song or artist — 영어 / 한글 OK";
+    msg.textContent = "";
+    renderEnd();
+  }
+  function renderEnd() {
+    if (!over) { endEl.hidden = true; return; }
+    const won = guesses.some(g => g.id === answer.id);
+    const share = shareText(won);
+    let statsHTML = "";
+    if (mode === "daily") {
+      const st = store.get("stats", null) || blankStats();
+      const max = Math.max(1, ...st.dist);
+      statsHTML = `
+        <div class="stats">
+          <div><b>${st.played}</b><span>Played</span></div>
+          <div><b>${st.played ? Math.round(st.wins / st.played * 100) : 0}</b><span>Win %</span></div>
+          <div><b>${st.streak}</b><span>Streak</span></div>
+          <div><b>${st.best}</b><span>Best</span></div>
+        </div>
+        <div class="dist">${st.dist.map((n, i) => `<div class="r"><span>${i + 1}</span><span class="bar${won && guesses.length === i + 1 ? " cur" : ""}" style="--w:${Math.max(8, n / max * 100)}%">${n}</span></div>`).join("")}</div>
+        <div class="next" id="next"></div>`;
+    }
+    endEl.innerHTML = `
+      <h2>${won ? (guesses.length === 1 ? "Solved on the first guess." : `Solved in ${guesses.length}.`) : "Case unsolved."}</h2>
+      <div class="ans">The answer was <b>${esc(answer.title)}</b> by ${esc(ARTISTS[answer.artist].name)} (${answer.year}, ${esc(answer.company)}, ${answer.isTitle ? "title track" : "b-side"}, ${fmtLen(answer.sec)}, ${TIERS[answer.tier]} views).</div>
+      <pre class="share" id="shareText">${esc(share)}</pre>
+      <div class="row-btns">
+        <button class="btn" id="copyBtn">Copy result</button>
+        ${mode === "practice" ? `<button class="btn ghost" id="againBtn">New practice song</button>` : `<button class="btn ghost" id="toPractice">Play practice</button>`}
+      </div>
+      ${statsHTML}`;
+    endEl.hidden = false;
+    $("copyBtn").onclick = () => copy(share);
+    if ($("againBtn")) $("againBtn").onclick = startPractice;
+    if ($("toPractice")) $("toPractice").onclick = startPractice;
+    tick();
+  }
+  function shareText(won) {
+    const head = mode === "daily" ? `Chart Detective #${caseNo()} — ${won ? guesses.length : "X"}/${MAX}` : `Chart Detective (practice) — ${won ? guesses.length : "X"}/${MAX}`;
+    const rows = guesses.map(g => compare(g, answer).map(c => EMOJI[c.st]).join(""));
+    return [head, ...rows].join("\n");
+  }
+  function copy(text) {
+    const done = () => { $("copyBtn").textContent = "Copied"; setTimeout(() => { const b = $("copyBtn"); if (b) b.textContent = "Copy result"; }, 1600); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($("shareText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $("copyBtn").textContent = "Selected — press copy"; };
+    try { navigator.clipboard.writeText(text).then(done, fallback); } catch { fallback(); }
+  }
+  function tick() {
+    const el = $("next"); if (!el) return;
+    const ms = (kstDay() + 1) * DAY - KST - Date.now();
+    const h = Math.floor(ms / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
+    el.textContent = `Next case in ${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+  setInterval(() => { tick(); if (mode === "daily" && answer && dailyAnswer().id !== answer.id) startDaily(); }, 1000);
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  // ---------- Stats ----------
+  function blankStats() { return { played: 0, wins: 0, streak: 0, best: 0, dist: Array(MAX).fill(0), lastDay: null }; }
+  function recordDaily(won) {
+    const st = store.get("stats", null) || blankStats(), d = kstDay();
+    if (st.lastDay === d) return;
+    st.played++;
+    if (won) { st.wins++; st.dist[guesses.length - 1]++; st.streak = st.lastWinDay === d - 1 ? st.streak + 1 : 1; st.lastWinDay = d; st.best = Math.max(st.best, st.streak); }
+    else st.streak = 0;
+    st.lastDay = d;
+    store.set("stats", st);
+  }
+
+  // ---------- Guessing ----------
+  function submit(song) {
+    if (over || !song) return;
+    if (guesses.some(g => g.id === song.id)) { msg.textContent = "You already guessed that song."; return; }
+    guesses.push(song);
+    const won = song.id === answer.id;
+    over = won || guesses.length >= MAX;
+    if (mode === "daily") {
+      store.set("day-" + kstDay(), { guesses: guesses.map(g => g.id), over });
+      if (over) recordDaily(won);
+    }
+    render(true);
+    if (!over) input.focus();
+  }
+
+  // ---------- Autocomplete ----------
+  let matches = [], sel = -1;
+  function search(q) {
+    const n = norm(q); if (!n) return [];
+    const used = new Set(guesses.map(g => g.id));
+    const scored = [];
+    for (const s of SONGS) {
+      if (used.has(s.id)) continue;
+      let score = -1;
+      if (s.keys.some(k => k.startsWith(n))) score = 3;
+      else if (s.keys.some(k => k.includes(n))) score = 2;
+      else if (s.artistKeys.some(k => k.startsWith(n))) score = 1;
+      else if (n.length >= 3 && s.artistKeys.some(k => k.includes(n))) score = 0.5;
+      if (score >= 0) scored.push([score, s]);
+    }
+    return scored.sort((a, b) => b[0] - a[0] || a[1].title.localeCompare(b[1].title)).slice(0, 8).map(x => x[1]);
+  }
+  function showSugg() {
+    matches = search(input.value); sel = matches.length ? 0 : -1;
+    if (!input.value.trim()) return closeSugg();
+    sugg.innerHTML = matches.length
+      ? matches.map((s, i) => `<li role="option" id="opt${i}" data-i="${i}" aria-selected="${i === sel}"><span class="t">${esc(s.title)}</span><span class="a">${esc(ARTISTS[s.artist].name)}</span></li>`).join("")
+      : `<li class="none" aria-disabled="true">No song in this case file matches.</li>`;
+    sugg.hidden = false; input.setAttribute("aria-expanded", "true");
+    input.setAttribute("aria-activedescendant", sel >= 0 ? "opt" + sel : "");
+  }
+  function closeSugg() { sugg.hidden = true; matches = []; sel = -1; input.setAttribute("aria-expanded", "false"); input.removeAttribute("aria-activedescendant"); }
+  function moveSel(d) {
+    if (!matches.length) return;
+    sel = (sel + d + matches.length) % matches.length;
+    [...sugg.children].forEach((li, i) => li.setAttribute("aria-selected", i === sel));
+    input.setAttribute("aria-activedescendant", "opt" + sel);
+    sugg.children[sel]?.scrollIntoView({ block: "nearest" });
+  }
+  input.addEventListener("input", showSugg);
+  input.addEventListener("keydown", e => {
+    if (e.isComposing) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); moveSel(1); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); moveSel(-1); }
+    else if (e.key === "Enter") { e.preventDefault(); if (sel >= 0) submit(matches[sel]); else if (input.value.trim()) msg.textContent = "Pick a song from the list."; }
+    else if (e.key === "Escape") closeSugg();
+  });
+  sugg.addEventListener("mousedown", e => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); submit(matches[+li.dataset.i]); } });
+  input.addEventListener("blur", () => setTimeout(closeSugg, 120));
+
+  // ---------- Controls ----------
+  $("modeDaily").onclick = () => { if (mode !== "daily") startDaily(); };
+  $("modePractice").onclick = () => { if (mode !== "practice") startPractice(); };
+  $("helpBtn").onclick = () => { const h = $("help"); h.hidden = !h.hidden; $("helpBtn").setAttribute("aria-expanded", String(!h.hidden)); };
+  if (!store.get("seenHelp", false)) { $("help").hidden = false; $("helpBtn").setAttribute("aria-expanded", "true"); store.set("seenHelp", true); }
+
+  startDaily();
+})();
+</script>

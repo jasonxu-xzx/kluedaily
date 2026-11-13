@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy · Klue</title>
+<meta name="description" content="What Klue stores and measures, and what it doesn't.">
+<meta name="theme-color" content="#3047d6">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=IBM+Plex+Sans+KR:wght@400;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<main class="doc">
+  <p><a href="./">← Back to the game</a></p>
+  <h1>Privacy</h1>
+  <p class="meta">Last updated 13 November 2026</p>
+
+  <p>Klue (kluedaily.com) is a free daily game. There are no accounts, no ads and no sign-in. This page says what the site keeps and why.</p>
+
+  <h2>On your device</h2>
+  <p>Your guesses for today, your stats (played, win rate, streak) and your chosen filter are saved in your browser's local storage so they survive a refresh. They never leave your device. Clearing your browser's site data deletes them.</p>
+
+  <h2>Usage analytics</h2>
+  <p>We use <a href="https://posthog.com" rel="noopener">PostHog</a> (servers in the United States) to learn how the game is played, so we can tune difficulty and add songs. It records:</p>
+  <ul>
+    <li>page views, with the referring site and campaign tags such as <code>utm_source</code>;</li>
+    <li>game events: starting a game, each guess, finishing (won or not, number of guesses, mode, filter, difficulty, which clue columns were shown), sharing, changing filter or mode, and opening the error report link;</li>
+    <li>a random ID stored in local storage, so return visits can be counted, plus browser type, device type and an approximate location (country/city) derived from your IP address.</li>
+  </ul>
+  <p>We don't use cookies, record sessions or your screen, sell data, or link the random ID to your name or email. We don't build advertising profiles.</p>
+  <p>To opt out, block <code>posthog.com</code> with a content blocker, or clear the site's local storage to reset the random ID.</p>
+
+  <h2>Fonts</h2>
+  <p>Fonts load from Google Fonts, which sees your IP address when it sends them.</p>
+
+  <h2>Reporting a data error</h2>
+  <p>The "Report a data error" link opens a Google Form. Only what you type into it is sent, and Google's privacy policy applies to the form.</p>
+
+  <h2>Song data</h2>
+  <p>The game shows facts about songs (release date, label, length, genre, view tier). It contains no audio, lyrics or album art. Song titles and artist names belong to their owners.</p>
+
+  <h2>Contact</h2>
+  <!-- TODO(contact): set up forwarding for hello@kluedaily.com (Cloudflare Email Routing) before launch. -->
+  <p>Questions or deletion requests: <a href="mailto:hello@kluedaily.com">hello@kluedaily.com</a>.</p>
+</main>
+</body>
+</html>
