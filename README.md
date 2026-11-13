@@ -6,7 +6,7 @@ Working title was "Chart Detective" (the history below and the `archive/` files 
 
 **Play locally:** `npm run serve`, then open http://localhost:8787.
 **After editing songs/artists:** `npm run schedule` (keeps today and tomorrow fixed, reschedules the rest).
-**Deploy:** push to `main` on GitHub (jasonxu-xzx/kluedaily; repo name kept from the Klue days); Cloudflare Pages deploys `site/` automatically
+**Deploy:** push to `main` on GitHub (this repo; its name, kluedaily, is left over from the Klue days); Cloudflare Pages deploys `site/` automatically
 (preset "None", no build command, output directory `site`). Live at https://kuedrop.com; `www` and the old
 kluedaily.com 301-redirect to it via Cloudflare Redirect Rules. `hello@kuedrop.com` forwards via Cloudflare Email Routing.
 **Settings:** PostHog key, report-form URL and site URL live in `site/assets/config.js`.
@@ -32,7 +32,7 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 ## Launch checklist
 **Done**
 - [x] Format playtested (artist + 4 rotating columns, girl/boy/all filters)
-- [x] Current 48 songs verified by Jason (corrections still to be applied to the file)
+- [x] Current 48 songs verified by the owner (corrections still to be applied to the file)
 
 **Before soft launch**
 - [ ] Apply data corrections

@@ -2,7 +2,7 @@
 
 Entered from memory for playtesting. Debut years, labels and release years are
 widely documented, but verify everything before launch. Purple categories
-marked UNVERIFIED came from Jason's notes and haven't been checked.
+marked UNVERIFIED came from the owner's notes and haven't been checked.
 """
 
 # ---------- Groups: id -> (display name, label, debut year) ----------

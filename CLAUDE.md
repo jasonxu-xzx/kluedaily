@@ -2,7 +2,7 @@
 
 **KueDrop** (https://kuedrop.com; "cue" + a comeback "drop"). Earlier names: "Chart Detective" (working title),
 "Klue" (dropped Nov 2026: an existing word game already uses it; kluedaily.com should 301 to kuedrop.com). Daily K-pop song-guessing web game, built as a side project AND a marketing-analytics
-project (acquisition, retention, share rate). Owner: Jason. Read README.md for the full
+project (acquisition, retention, share rate). Read README.md for the full
 history and launch checklist.
 
 ## Current state
@@ -38,9 +38,9 @@ history and launch checklist.
   year, month, season, MV views (tiers), length, genre, label, title letters, title words,
   first letter, last letter, title language, career stage.
 - Month and season never appear on the same day (`CLASH`).
-- Feedback: exact = green (🟩 in share text), close = yellow (🟨), off = pale (⬜). Jason's call: keep
+- Feedback: exact = green (🟩 in share text), close = yellow (🟨), off = pale (⬜). Owner's call: keep
   green/yellow, players read them by habit. ↑↓ for numbers; ← → for letters (alphabetical).
-- Look ("pop", approved by Jason): aesthetic reference is 2020s K-pop pop-art album branding (the look only:
+- Look ("pop", approved by the owner): aesthetic reference is 2020s K-pop pop-art album branding (the look only:
   never copy album art, logos or wordmarks). Lemon #FFE14F ground, cobalt #1F46C8 ink/outlines, bubblegum
   #FF8AC8 accent; white sticker cards (2.5px cobalt outline + 4px hard offset shadow); pill buttons/toggles;
   `site/dots.svg` polka dots/bubbles at the page edges (cropped away on phones). Fonts: Bagel Fat One (logo,
@@ -75,14 +75,14 @@ history and launch checklist.
 - No audio, lyrics or album art in the game (licensing). Don't scrape Melon.
 
 ## Next engineering steps (in order)
-1. Split data out of index.html into `data/songs.json` + `data/artists.json`; apply Jason's corrections.
+1. Split data out of index.html into `data/songs.json` + `data/artists.json`; apply the owner's data corrections.
 2. Make a standalone page: doctype/head, title + description, Open Graph tags + 1200×630 preview image, favicon.
 3. Analytics with PostHog (US cloud, `api_host: https://us.i.posthog.com`). Events:
    `game_started`, `guess_made`, `game_completed` (won, guesses, mode, filter, difficulty, clues),
    `share_clicked`, `filter_changed`, `mode_changed`, `report_error_clicked`. Keep the key in one config spot.
 4. Share text ends with the site URL + `?utm_source=share&utm_medium=social` (referral attribution).
-5. Privacy policy page; "Report a data error" link (Google Form URL from Jason).
-6. Git repo → Cloudflare Pages on Jason's domain.
+5. Privacy policy page; "Report a data error" link (Google Form).
+6. Git repo → Cloudflare Pages on the project domain.
 7. Later: build script that precomputes lineup scores (browser scoring gets slow past ~150 songs),
    weekly GitHub Action pulling YouTube view counts (videos.list, 50 IDs per call; never search.list),
    cover-color column via iTunes Search API artwork + dominant-color buckets.
