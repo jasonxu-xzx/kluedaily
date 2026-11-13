@@ -38,8 +38,8 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 - [ ] Apply data corrections
 - [x] ~~Klue / kluedaily.com~~: dropped, an existing word game is called Klue
 - [x] Final name: **KueDrop**; domain **kuedrop.com**
-- [ ] kuedrop.com on Cloudflare: Pages custom domain, www redirect, kluedaily.com → kuedrop.com redirect, Email Routing
-- [ ] Search X/TikTok/Discord/app stores for other games called "KueDrop"
+- [x] kuedrop.com on Cloudflare: custom domain, www → root redirect, Always Use HTTPS, kluedaily.com (+www) 301 → kuedrop.com (path + query kept), Email Routing for hello@
+- [x] Searched for other games called "KueDrop": none; social handles registered
 - [x] Data split into `site/data/songs.json` + `artists.json`
 - [x] Standalone page: head tags, Open Graph preview image, favicon
 - [x] PostHog analytics with the events listed in CLAUDE.md (key set, events verified)
@@ -48,7 +48,7 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 - [x] "Report a data error" link (Google Form)
 - [x] Stable daily schedule (`data/schedule.json`, `npm run schedule` after every data change)
 - [x] Weekly GitHub Action running `npm run check` so the schedule never runs out
-- [x] GitHub repo → Cloudflare Pages (was on kluedaily.com; move to kuedrop.com above)
+- [x] GitHub repo → Cloudflare → kuedrop.com
 - [x] Cloudflare: "Always Use HTTPS" on (http:// → https://)
 - [x] PostHog: internal/test filter (`$host` doesn't contain localhost, 127.0.0.1, pages.dev)
 - [x] Phone check on the live site: play, share, link preview card
