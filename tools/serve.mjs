@@ -18,4 +18,4 @@ http.createServer((req, res) => {
     if (err) { res.writeHead(404, { "content-type": "text/plain" }).end("Not found"); return; }
     res.writeHead(200, { "content-type": TYPES[path.extname(file)] || "application/octet-stream", "cache-control": "no-store" }).end(buf);
   });
-}).listen(port, "127.0.0.1", () => console.log(`Klue at http://localhost:${port}/`));
+}).listen(port, "127.0.0.1", () => console.log(`KueDrop at http://localhost:${port}/`));

@@ -1,6 +1,7 @@
-# Klue — project notes for Claude Code
+# KueDrop — project notes for Claude Code
 
-**Klue** (https://kluedaily.com; working title "Chart Detective"). Daily K-pop song-guessing web game, built as a side project AND a marketing-analytics
+**KueDrop** (https://kuedrop.com; "cue" + a comeback "drop"). Earlier names: "Chart Detective" (working title),
+"Klue" (dropped Nov 2026: an existing word game already uses it; kluedaily.com should 301 to kuedrop.com). Daily K-pop song-guessing web game, built as a side project AND a marketing-analytics
 project (acquisition, retention, share rate). Owner: Jason. Read README.md for the full
 history and launch checklist.
 
@@ -12,7 +13,7 @@ history and launch checklist.
   - `assets/engine.js`: shared rules (columns, comparisons, pools, lineup scoring, KST calendar). ES module,
     imported by the browser and by `tools/schedule.mjs`. No DOM here.
   - `assets/game.js`: UI, storage, share, analytics events (ES module).
-  - `data/songs.json` (48 songs, stable slug `id`) and `data/artists.json` (gender F/M/X, debut, parent, aliases).
+  - `data/songs.json` (69 songs, stable slug `id`) and `data/artists.json` (gender F/M/X, debut, parent, aliases).
   - `data/schedule.json`: **the daily answers**: per filter, one entry per case
     `{case, date, song, clues, band}`. Generated, never hand-edited.
   - `og.png`, `apple-touch-icon.png` are rendered from `tools/og.html` + `favicon.svg` by `tools/make-images.ps1`.
@@ -29,7 +30,6 @@ history and launch checklist.
   - **Song `id`s must never change or be removed once scheduled**; the script refuses if a locked case
     would break. Fix a title by editing `title`/`aliases`, not `id`.
   - If a day is missing from the schedule, `engine.js` falls back to a seeded pick (console warning).
-- **Jason's data corrections are still not applied.**
 - `archive/chart-detective-v2-prototype.html` is the original single-file prototype.
 
 ## Game rules (decided — don't change without asking)

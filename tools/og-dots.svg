@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630">
+  <!-- Dots for the 1200x630 preview image only: corners and the right edge, nothing behind the wordmark or text. -->
+  <defs>
+    <radialGradient id="gloss" cx="35%" cy="30%" r="70%">
+      <stop offset="0" stop-color="#fff" stop-opacity=".85"/>
+      <stop offset=".25" stop-color="#fff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <circle cx="20" cy="30" r="110" fill="#1F46C8"/>
+  <circle cx="50" cy="610" r="80" fill="#8FD3FF"/><circle cx="50" cy="610" r="80" fill="url(#gloss)"/>
+  <circle cx="1130" cy="20" r="90" fill="#FF8AC8"/><circle cx="1130" cy="20" r="90" fill="url(#gloss)"/>
+  <circle cx="1170" cy="300" r="55" fill="#1F46C8"/>
+  <circle cx="1110" cy="600" r="120" fill="#1F46C8"/>
+  <circle cx="960" cy="610" r="22" fill="#FF8AC8"/>
+  <circle cx="560" cy="40" r="16" fill="#1F46C8"/>
+  <circle cx="610" cy="590" r="26" fill="#FF8AC8"/><circle cx="610" cy="590" r="26" fill="url(#gloss)"/>
+</svg>

@@ -37,8 +37,8 @@ function practicePuzzle(filter, prevId) {
 }
 
 const store = {
-  get(k, d) { try { const v = localStorage.getItem("klue:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-  set(k, v) { try { localStorage.setItem("klue:" + k, JSON.stringify(v)); } catch {} },
+  get(k, d) { try { const v = localStorage.getItem("kuedrop:" + k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("kuedrop:" + k, JSON.stringify(v)); } catch {} },
 };
 
 // ---------- State ----------
@@ -87,7 +87,7 @@ function render(animateLast) {
 
 const shareUrl = () => (CFG.siteUrl || (location.origin + location.pathname).replace(/index\.html$/, "")).replace(/\/?$/, "/") + "?utm_source=share&utm_medium=social";
 function shareText(won) {
-  const head = `${mode === "daily" ? `Klue #${caseNo()}` : "Klue (practice)"}${FILTER_LABEL[filter]} — ${won ? guesses.length : "X"}/${MAX}`;
+  const head = `${mode === "daily" ? `KueDrop #${caseNo()}` : "KueDrop (practice)"}${FILTER_LABEL[filter]} — ${won ? guesses.length : "X"}/${MAX}`;
   const rows = guesses.map(g => cols().map(c => EMOJI[c.cmp(g, puz.answer).st]).join(""));
   return [head, `Difficulty: ${DIFF_NAMES[puz.band]}`, ...rows, "", shareUrl()].join("\n");
 }

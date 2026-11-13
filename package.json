@@ -1,5 +1,5 @@
 {
-  "name": "klue",
+  "name": "kuedrop",
   "private": true,
   "type": "module",
   "description": "Daily K-pop song-guessing game. Static site in site/; no build step, no dependencies.",

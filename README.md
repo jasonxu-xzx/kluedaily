@@ -1,14 +1,14 @@
-# Klue
+# KueDrop
 
-A daily K-pop song-guessing game with rotating clue columns, at **https://kluedaily.com**
-(domain registered at Namecheap). Side project and marketing-analytics project.
-Working title was "Chart Detective" (the history below and the `archive/` files use it).
+A daily K-pop song-guessing game with rotating clue columns, at **https://kuedrop.com**. Side project and marketing-analytics project.
+Working title was "Chart Detective" (the history below and the `archive/` files use it); briefly "Klue"
+(kluedaily.com) until we found an existing word game with that name.
 
 **Play locally:** `npm run serve`, then open http://localhost:8787.
 **After editing songs/artists:** `npm run schedule` (keeps today and tomorrow fixed, reschedules the rest).
-**Deploy:** push to `main` on GitHub (jasonxu-xzx/kluedaily); Cloudflare Pages deploys `site/` automatically
-(preset "None", no build command, output directory `site`). Live at https://kluedaily.com; `www` 301-redirects
-to it via a Cloudflare Redirect Rule. `hello@kluedaily.com` forwards via Cloudflare Email Routing.
+**Deploy:** push to `main` on GitHub (jasonxu-xzx/kluedaily; repo name kept from the Klue days); Cloudflare Pages deploys `site/` automatically
+(preset "None", no build command, output directory `site`). Live at https://kuedrop.com; `www` and the old
+kluedaily.com 301-redirect to it via Cloudflare Redirect Rules. `hello@kuedrop.com` forwards via Cloudflare Email Routing.
 **Settings:** PostHog key, report-form URL and site URL live in `site/assets/config.js`.
 **Preview image:** edit `tools/og.html`, run `powershell -File tools/make-images.ps1`, then bump `og.png?v=N` in
 `site/index.html` (both tags). iMessage/Discord cache by image URL and keep showing the old picture otherwise.
@@ -36,18 +36,19 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 
 **Before soft launch**
 - [ ] Apply data corrections
-- [x] Final name: **Klue**; domain **kluedaily.com** (Namecheap)
-- [x] Searched X/Google for other games called "Klue": none similar found
-- [x] kluedaily.com nameservers on Cloudflare
+- [x] ~~Klue / kluedaily.com~~: dropped, an existing word game is called Klue
+- [x] Final name: **KueDrop**; domain **kuedrop.com**
+- [ ] kuedrop.com on Cloudflare: Pages custom domain, www redirect, kluedaily.com → kuedrop.com redirect, Email Routing
+- [ ] Search X/TikTok/Discord/app stores for other games called "KueDrop"
 - [x] Data split into `site/data/songs.json` + `artists.json`
 - [x] Standalone page: head tags, Open Graph preview image, favicon
 - [x] PostHog analytics with the events listed in CLAUDE.md (key set, events verified)
 - [x] Share text includes URL with `utm_source=share` (+ native share button on phones)
-- [x] Privacy policy page, contact hello@kluedaily.com (Email Routing)
+- [x] Privacy policy page, contact hello@kuedrop.com (Email Routing)
 - [x] "Report a data error" link (Google Form)
 - [x] Stable daily schedule (`data/schedule.json`, `npm run schedule` after every data change)
 - [x] Weekly GitHub Action running `npm run check` so the schedule never runs out
-- [x] GitHub repo → Cloudflare Pages → kluedaily.com (+ www redirect)
+- [x] GitHub repo → Cloudflare Pages (was on kluedaily.com; move to kuedrop.com above)
 - [x] Cloudflare: "Always Use HTTPS" on (http:// → https://)
 - [x] PostHog: internal/test filter (`$host` doesn't contain localhost, 127.0.0.1, pages.dev)
 - [x] Phone check on the live site: play, share, link preview card
