@@ -29,11 +29,15 @@ const LANG = { EN: "English", KR: "Korean", MIX: "Mixed" };
 const GENRE_NEAR = { "Dance-pop": ["EDM", "Latin", "Rock/Band"], "EDM": ["Dance-pop"], "Latin": ["Dance-pop"],
   "Rock/Band": ["Dance-pop"], "Hip-hop": ["R&B"], "R&B": ["Hip-hop"] };
 const CLASH = [["month", "season"]];   // never show both on one day
+export const GENRES = Object.keys(GENRE_NEAR);      // the 6 fixed buckets
+export const TITLE_LANGS = Object.keys(LANG);
 
 export const norm = s => s.toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, "");
 const alnum = t => t.replace(/[^A-Za-z0-9]/g, "");
 
-export function createEngine(ARTISTS, rawSongs) {
+// opts.lineups: precomputed ranked clue sets ({ all: ["year,month,genre,lang", ...], girl, boy }, easiest first, written
+// to site/data/lineups.json by tools/schedule.mjs). With it, the browser never runs the slow difficulty scoring.
+export function createEngine(ARTISTS, rawSongs, opts = {}) {
   // ---------- Songs ----------
   const seen = new Set();
   const SONGS = rawSongs.map((r, i) => {
@@ -43,7 +47,8 @@ export function createEngine(ARTISTS, rawSongs) {
     const a = ARTISTS[r.artist];
     if (!a) throw new Error(`Song "${r.title}" has unknown artist "${r.artist}"`);
     const s = { id: i, slug: r.id, title: r.title, artist: r.artist, year: r.year, month: r.month,
-      company: r.label, family: r.labelFamily, sec: r.seconds, tier: r.viewTier, genre: r.genre, lang: r.titleLang, aliases: r.aliases || [] };
+      company: r.label, family: r.labelFamily, sec: r.seconds, tier: r.viewTier, genre: r.genre, lang: r.titleLang, aliases: r.aliases || [],
+      guessOnly: !!r.guessOnly };   // guessOnly: can be guessed, never chosen as an answer
     s.keys = [s.title, ...s.aliases].map(norm);
     s.artistKeys = [a.name, ...(a.aliases || [])].map(norm);
     s.letters = alnum(s.title).length;
@@ -92,6 +97,9 @@ export function createEngine(ARTISTS, rawSongs) {
     girl: SONGS.filter(x => ARTISTS[x.artist].gender !== "M"),
     boy: SONGS.filter(x => ARTISTS[x.artist].gender !== "F"),
   };
+  // Answer pools: songs that can be a daily or practice answer (everything not marked guessOnly).
+  // Guessing and difficulty scoring still use the full POOLS: players don't know which songs are answer-only.
+  const ANSWERS = Object.fromEntries(Object.entries(POOLS).map(([f, p]) => [f, p.filter(s => !s.guessOnly)]));
 
   // ---------- Difficulty: how fast does a lineup narrow the pool? ----------
   // Score = average number of songs giving the same feedback as the answer after one guess.
@@ -115,8 +123,17 @@ export function createEngine(ARTISTS, rawSongs) {
     return total / (n * n);
   }
   const lineupCache = {};
+  function precomputed(filter) {
+    const list = opts.lineups && opts.lineups[filter];
+    if (!Array.isArray(list) || !list.length) return null;
+    const out = list.map(str => ({ cols: String(str).split(",").map(id => COL_BY_ID.get(id)) }));
+    if (out.some(l => l.cols.length !== ROTATING || l.cols.some(c => !c))) { console.warn("lineups.json has unknown clue ids; scoring in the browser instead"); return null; }
+    return out;
+  }
   function lineupsFor(filter) {
     if (lineupCache[filter]) return lineupCache[filter];
+    const pre = precomputed(filter);
+    if (pre) return (lineupCache[filter] = pre);
     const pool = POOLS[filter], out = [], m = COLS.length;
     const combo = (start, picked) => {
       if (picked.length === ROTATING) {
@@ -146,7 +163,7 @@ export function createEngine(ARTISTS, rawSongs) {
   // The fallback only runs if a day is missing from it, so the game never breaks.
   const SEEDS = { all: 2027, girl: 3031, boy: 4049 };
   function fallbackPuzzle(filter, day) {
-    const pool = POOLS[filter], k = day - LAUNCH_DAY, r = mulberry32(hashStr(`${filter}:${k}`));
+    const pool = ANSWERS[filter].length ? ANSWERS[filter] : POOLS[filter], k = day - LAUNCH_DAY, r = mulberry32(hashStr(`${filter}:${k}`));
     const band = bandOfDay(day);
     return { answer: pool[Math.floor(r() * pool.length)], lineup: pickLineup(filter, band, mulberry32(SEEDS[filter] + k)), band, scheduled: false };
   }
@@ -161,5 +178,6 @@ export function createEngine(ARTISTS, rawSongs) {
     return puz || fallbackPuzzle(filter, day);
   }
 
-  return { ARTISTS, SONGS, BY_SLUG, ARTIST_COL, COLS, COL_BY_ID, POOLS, lineupsFor, bandRange, pickLineup, dailyPuzzle, entryToPuzzle };
+  const lineupIds = filter => lineupsFor(filter).map(l => l.cols.map(c => c.id).join(","));   // for writing lineups.json
+  return { ARTISTS, SONGS, BY_SLUG, ARTIST_COL, COLS, COL_BY_ID, POOLS, ANSWERS, lineupsFor, lineupIds, bandRange, pickLineup, dailyPuzzle, entryToPuzzle };
 }

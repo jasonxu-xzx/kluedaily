@@ -13,7 +13,9 @@ history and launch checklist.
   - `assets/engine.js`: shared rules (columns, comparisons, pools, lineup scoring, KST calendar). ES module,
     imported by the browser and by `tools/schedule.mjs`. No DOM here.
   - `assets/game.js`: UI, storage, share, analytics events (ES module).
-  - `data/songs.json` (69 songs, stable slug `id`) and `data/artists.json` (gender F/M/X, debut, parent, aliases).
+  - `data/songs.json` (stable slug `id`) and `data/artists.json` (gender F/M/X, debut, parent, aliases).
+  - `data/lineups.json`: generated ranked clue sets per filter (easiest first) for Practice mode, so the browser
+    never runs the O(songs²) lineup scoring (36 s at 1,000 songs on a PC; now ~10 ms). Stamped with `dataHash`.
   - `data/schedule.json`: **the daily answers**: per filter, one entry per case
     `{case, date, song, clues, band}`. Generated, never hand-edited.
   - `og.png`, `apple-touch-icon.png` are rendered from `tools/og.html` + `favicon.svg` by `tools/make-images.ps1`.
@@ -23,7 +25,13 @@ history and launch checklist.
 - **Schedule workflow:** after any change to songs.json/artists.json run `npm run schedule`
   (= `node tools/schedule.mjs`), then deploy data + schedule together. It keeps every case through
   tomorrow KST unchanged (`--lock-through N` to keep more), regenerates later days with the new data,
-  and extends 120 days ahead. `npm run check` exits 1 if invalid or < 14 days left (for CI).
+  and extends 120 days ahead, and rewrites lineups.json. `npm run check` exits 1 if the data is invalid, the
+  schedule is broken or < 14 days left, or lineups.json is stale (for CI).
+  - **Data validation** (`tools/validate.mjs`, run by both): errors block (bad genre/lang/month/tier/length,
+    unknown artist, release before debut, duplicate id, a label spelled two ways); warnings flag likely typos
+    (look-alike label/artist names, same titles). Deliberate label renames go in `KNOWN_DISTINCT`.
+  - Picks come from the **answer pool** (songs without `"guessOnly": true`); guessOnly songs can be guessed
+    and count in difficulty scoring, but are never an answer (daily, practice or fallback).
   - Picks: weighted draw from the longest-waiting third of the pool, no same artist within 2 days,
     no same song as another filter that day; new songs count as waiting a full cycle, so they mix in
     within weeks. Lineup: random within the weekday's band, no lineup repeated within 14 days.
@@ -76,6 +84,9 @@ history and launch checklist.
   Count the official MV wherever it was first posted. No MV is its own tier.
 - NewJeans: leave label-family questions neutral (ongoing ADOR/HYBE dispute).
 - No audio, lyrics or album art in the game (licensing). Don't scrape Melon.
+- Song `id` = title slug (`hype-boy`); if two songs share a title, use `<title slug>-<artist key>` (`butterfly-bts`).
+- `"guessOnly": true` (optional) = guessable deep cut that is never chosen as an answer. Default: answerable.
+- Keep the girl/boy pools reasonably balanced: the smaller pool repeats daily answers sooner.
 
 ## Next engineering steps (in order)
 1. Split data out of index.html into `data/songs.json` + `data/artists.json`; apply the owner's data corrections.
@@ -86,6 +97,5 @@ history and launch checklist.
 4. Share text ends with the site URL + `?utm_source=share&utm_medium=social` (referral attribution).
 5. Privacy policy page; "Report a data error" link (Google Form).
 6. Git repo → Cloudflare Pages on the project domain.
-7. Later: build script that precomputes lineup scores (browser scoring gets slow past ~150 songs),
-   weekly GitHub Action pulling YouTube view counts (videos.list, 50 IDs per call; never search.list),
+7. Later: weekly GitHub Action pulling YouTube view counts (videos.list, 50 IDs per call; never search.list),
    cover-color column via iTunes Search API artwork + dominant-color buckets.

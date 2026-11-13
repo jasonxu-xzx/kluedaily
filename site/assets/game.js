@@ -8,11 +8,13 @@ const $ = id => document.getElementById(id);
 const get = u => fetch(u, { cache: "no-cache" }).then(r => { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); });
 let E, SCHEDULE = null;
 try {
-  const [artists, songs, schedule] = await Promise.all([
+  const [artists, songs, schedule, lineups] = await Promise.all([
     get("data/artists.json"), get("data/songs.json"),
     get("data/schedule.json").catch(err => { console.warn("No schedule, using fallback picks:", err); return null; }),
+    // Precomputed clue sets for Practice; without them the browser scores lineups itself (slow with many songs).
+    get("data/lineups.json").catch(err => { console.warn("No lineups.json, scoring clue sets in the browser:", err); return null; }),
   ]);
-  E = createEngine(artists, songs);
+  E = createEngine(artists, songs, { lineups });
   SCHEDULE = schedule;
 } catch (err) {
   $("loading").textContent = "Couldn't load today's case. Check your connection and refresh.";
@@ -30,7 +32,7 @@ function dailyPuzzleFor(filter) {
   return puz;
 }
 function practicePuzzle(filter, prevId) {
-  const pool = POOLS[filter];
+  const pool = E.ANSWERS[filter];   // guessOnly songs are never the answer
   let a; do { a = pool[Math.floor(Math.random() * pool.length)]; } while (pool.length > 1 && a.id === prevId);
   const band = Math.floor(Math.random() * 7);
   return { answer: a, lineup: E.pickLineup(filter, band, Math.random), band };

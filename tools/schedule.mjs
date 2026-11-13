@@ -6,8 +6,12 @@
 //   node tools/schedule.mjs --check      validate only; exit 1 if broken or fewer than --min-days (14) days are left
 //
 // Run it after every change to songs.json / artists.json, then deploy schedule.json together with the data.
+// It first checks the data (tools/validate.mjs: errors stop it), and also writes site/data/lineups.json, the ranked
+// clue sets Practice mode uses so the browser never has to score them (that scoring gets slow past ~150 songs).
 // Past cases, today and tomorrow never change, so a deploy can't swap the answer under someone mid-game.
 import fs from "node:fs";
+import crypto from "node:crypto";
+import { validateData, poolReport } from "./validate.mjs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createEngine, FILTERS, ROTATING, gameDay, caseOfDay, dayOfCase, dateOfDay, bandOfDay, mulberry32, hashStr, DIFF_NAMES } from "../site/assets/engine.js";
@@ -20,7 +24,21 @@ const CHECK = args.includes("--check");
 
 const dataDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "site", "data");
 const readJson = f => JSON.parse(fs.readFileSync(path.join(dataDir, f), "utf8"));
-const E = createEngine(readJson("artists.json"), readJson("songs.json"));
+const ARTISTS = readJson("artists.json"), SONGS = readJson("songs.json");
+// Fingerprint of the song data, stored in lineups.json so --check can tell when it is out of date.
+const dataHash = crypto.createHash("sha1").update(JSON.stringify([ARTISTS, SONGS])).digest("hex").slice(0, 12);
+const lineupsFile = path.join(dataDir, "lineups.json");
+
+// ---------- Check the song data first ----------
+const data = validateData(ARTISTS, SONGS);
+data.warnings.forEach(w => console.warn("data warn:", w));
+if (data.errors.length) {
+  data.errors.forEach(e => console.error("DATA ERROR:", e));
+  console.error(`${data.errors.length} data error(s) in site/data/songs.json / artists.json. Fix them and run again.`);
+  process.exit(1);
+}
+const E = createEngine(ARTISTS, SONGS);
+for (const f of FILTERS) if (!E.ANSWERS[f].length) { console.error(`DATA ERROR: no answer songs in the ${f} pool (all guessOnly?)`); process.exit(1); }
 const schedFile = path.join(dataDir, "schedule.json");
 const old = fs.existsSync(schedFile) ? readJson("schedule.json") : {};
 
@@ -36,7 +54,7 @@ for (const f of FILTERS) {
     if (e.case !== i + 1) { errors.push(`${f}: entry ${i} has case ${e.case}, expected ${i + 1}`); return; }
     if (e.date !== dateOfDay(dayOfCase(e.case))) { errors.push(`${where}: date doesn't match LAUNCH_DAY in engine.js (launch date changed? delete schedule.json before launch, never after)`); return; }
     const p = E.entryToPuzzle(e);
-    const bad = !p ? `invalid entry (song "${e.song}" missing, or bad clues/band)` : !E.POOLS[f].includes(p.answer) ? `song "${e.song}" is not in the ${f} pool` : null;
+    const bad = !p ? `invalid entry (song "${e.song}" missing, or bad clues/band)` : !E.ANSWERS[f].includes(p.answer) ? `song "${e.song}" is not in the ${f} answer pool (guessOnly, or wrong filter)` : null;
     if (!bad) return;
     // Past days can't be played any more, so only today and later matter.
     (e.case >= todayCase ? errors : warnings).push(`${where}: ${bad}`);
@@ -50,7 +68,11 @@ if (CHECK) {
   errors.forEach(e => console.error("ERROR:", e));
   console.log(`Today is case #${todayCase} (${dateOfDay(today)} KST). Scheduled through case #${lastCase}: ${daysLeft} days left.`);
   if (daysLeft < MIN_DAYS) console.error(`ERROR: fewer than ${MIN_DAYS} days scheduled. Run: node tools/schedule.mjs`);
-  process.exit(errors.length || daysLeft < MIN_DAYS ? 1 : 0);
+  const lu = fs.existsSync(lineupsFile) ? JSON.parse(fs.readFileSync(lineupsFile, "utf8")) : null;
+  const luStale = !lu || lu.dataHash !== dataHash;
+  if (luStale) console.error(`ERROR: site/data/lineups.json is ${lu ? "out of date with the song data" : "missing"}. Run: npm run schedule`);
+  console.log(`Data OK (${SONGS.length} songs, ${Object.keys(ARTISTS).length} artists). ${poolReport(E)}`);
+  process.exit(errors.length || daysLeft < MIN_DAYS || luStale ? 1 : 0);
 }
 const lockedErrors = errors.filter(e => { const m = e.match(/case #(\d+)/); return m && +m[1] <= lockThrough; });
 if (lockedErrors.length) {
@@ -79,7 +101,7 @@ for (let c = 1; c <= endCase; c++) {
     if (prev && c <= lockThrough) { entry = prev; kept++; }
     else {
       const rng = mulberry32(hashStr(`${f}:${c}`));
-      const pool = E.POOLS[f];
+      const pool = E.ANSWERS[f];
       // A song never scheduled (at launch, or newly added) counts as last used one full pool-length before
       // this run started, so new songs join the rotation soon without all landing back to back.
       const lastUsed = s => st.lastUsed.has(s.slug) ? st.lastUsed.get(s.slug) : runStart - pool.length;
@@ -118,11 +140,19 @@ const lines = ["{",
   "}", ""];
 fs.writeFileSync(schedFile, lines.join("\n"));
 
+// Ranked clue sets (easiest first, hardest 15% already dropped) for Practice mode in the browser.
+const luLines = ["{",
+  `  "_note": "Generated by tools/schedule.mjs: ranked clue sets per filter (easiest first) for Practice mode. Don't hand-edit.",`,
+  `  "dataHash": ${JSON.stringify(dataHash)},`,
+  FILTERS.map(f => `  "${f}": ${JSON.stringify(E.lineupIds(f))}`).join(",\n"),
+  "}", ""];
+fs.writeFileSync(lineupsFile, luLines.join("\n"));
+
 // ---------- Report ----------
 warnings.forEach(w => console.warn("warn:", w));
 console.log(`Today is case #${todayCase} (${dateOfDay(today)} KST). Kept cases 1–${Math.min(lockThrough, lastCase)} unchanged; ${made} entries generated through case #${endCase} (${dateOfDay(dayOfCase(endCase))}).`);
 for (const f of FILTERS) {
-  const pool = E.POOLS[f], upcoming = out[f].filter(e => e.case >= todayCase);
+  const pool = E.ANSWERS[f], upcoming = out[f].filter(e => e.case >= todayCase);
   const firstAt = new Map(); upcoming.forEach(e => { if (!firstAt.has(e.song)) firstAt.set(e.song, e.case); });
   const last = new Map(); let minGap = Infinity, maxGap = 0;
   out[f].forEach(e => { if (last.has(e.song)) { const g = e.case - last.get(e.song); minGap = Math.min(minGap, g); maxGap = Math.max(maxGap, g); } last.set(e.song, e.case); });
@@ -132,3 +162,4 @@ for (const f of FILTERS) {
 }
 const t = out.all.find(e => e.case === Math.max(todayCase, 1));
 if (t) console.log(`  today (all): ${E.BY_SLUG.get(t.song).title} · ${t.clues.join(", ")} · ${DIFF_NAMES[t.band]}`);
+console.log(`  pools: ${poolReport(E)} · lineups.json written (${FILTERS.map(f => E.lineupIds(f).length).join("/")} clue sets)`);

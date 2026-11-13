@@ -1,10 +1,10 @@
-# Fails (and GitHub emails you) if data/schedule.json is invalid or has fewer than 14 days left.
+# Fails (and GitHub emails you) if the song data or schedule is invalid, lineups.json is stale, or the schedule has fewer than 14 days left.
 # Fix: run `npm run schedule` locally, commit, push.
 name: Schedule check
 
 on:
   push:
-    paths: ["site/data/**", "site/assets/engine.js", "tools/schedule.mjs"]
+    paths: ["site/data/**", "site/assets/engine.js", "tools/schedule.mjs", "tools/validate.mjs"]
   schedule:
     - cron: "0 0 * * 1"   # Mondays 09:00 KST
   workflow_dispatch:
