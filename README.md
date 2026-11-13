@@ -10,7 +10,8 @@ Working title was "Chart Detective" (the history below and the `archive/` files 
 (preset "None", no build command, output directory `site`). Live at https://kluedaily.com; `www` 301-redirects
 to it via a Cloudflare Redirect Rule. `hello@kluedaily.com` forwards via Cloudflare Email Routing.
 **Settings:** PostHog key, report-form URL and site URL live in `site/assets/config.js`.
-**Preview image:** edit `tools/og.html`, then `powershell -File tools/make-images.ps1`.
+**Preview image:** edit `tools/og.html`, run `powershell -File tools/make-images.ps1`, then bump `og.png?v=N` in
+`site/index.html` (both tags). iMessage/Discord cache by image URL and keep showing the old picture otherwise.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
 ## How we got here (Nov 2026)
