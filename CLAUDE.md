@@ -38,10 +38,13 @@ history and launch checklist.
   year, month, season, MV views (tiers), length, genre, label, title letters, title words,
   first letter, last letter, title language, career stage.
 - Month and season never appear on the same day (`CLASH`).
-- Feedback: exact = Sky Blue (🟦 in share text), close = Coral Glow (🟧), off = pale sand (⬜);
-  ↑↓ for numbers; ← → for letters (alphabetical).
-- Look: single light theme from the Klue palette (Honeydew bg, Soft Peach, Coral Glow, Tomato Jam accent,
-  Sky Blue); tokens at the top of `site/assets/style.css`. No dark mode, by choice.
+- Feedback: exact = green (🟩 in share text), close = yellow (🟨), off = pale (⬜). Jason's call: keep
+  green/yellow, players read them by habit. ↑↓ for numbers; ← → for letters (alphabetical).
+- Look: single light theme from the Klue palette (Soft Peach, Coral Glow, Tomato Jam accent, Sky Blue) on a
+  deeper sand page ground (#EBDDBC) so cards stand out; tokens at the top of `site/assets/style.css`. No dark mode.
+- Clue categories show names only (no emoji). Their explanations are hidden behind the
+  "What do these mean?" button in the lineup header (event `clue_help_opened`). Share text: header,
+  "Difficulty: X", emoji rows, URL.
 - Daily reset at **midnight KST**. Case #1 = 2026-11-20 (KST), set by `LAUNCH_DAY` in engine.js
   (temporary launch date). Before launch, `gameDay()` holds at launch day: Case #1 is playable now
   and the first refresh is midnight KST into Nov 21 (Case #2).

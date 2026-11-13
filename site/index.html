@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Klue: daily K-pop song guessing game</title>
 <meta name="description" content="Guess the mystery K-pop song in 8 tries. Artist is always a clue; the other four change every day at midnight KST. Girl group and boy group filters.">
-<meta name="theme-color" content="#F6FFEA">
+<meta name="theme-color" content="#EBDDBC">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
@@ -59,7 +59,10 @@
     <section class="lineup" aria-labelledby="lineupTitle">
       <div class="lineup-head">
         <h2 id="lineupTitle">Today's clues</h2>
-        <span class="diff" id="diff"></span>
+        <div class="lineup-tools">
+          <span class="diff" id="diff"></span>
+          <button class="rules-btn" id="rulesBtn" type="button" aria-expanded="false" aria-controls="clues"><span class="q" aria-hidden="true">?</span><span id="rulesLabel">What do these mean?</span></button>
+        </div>
       </div>
       <div class="clues" id="clues"></div>
     </section>

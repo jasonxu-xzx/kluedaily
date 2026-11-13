@@ -1,11 +1,11 @@
 ﻿/* Klue palette: Honeydew #F6FFEA · Soft Peach #FFDE96 · Coral Glow #FA855A · Tomato Jam #C93638 · Sky Blue #62C4DA.
-   One light theme on purpose (no dark mode). Feedback: Sky Blue = exact, Coral Glow = close, pale sand = off
-   (blue/orange also reads for colour-blind players). */
+   One light theme on purpose (no dark mode). Page ground is a deeper sand so white cards stand out (1.35:1).
+   Feedback stays green = exact / yellow = close / pale = off: players read those by habit. */
 :root {
   --honeydew: #F6FFEA; --peach: #FFDE96; --coral: #FA855A; --tomato: #C93638; --sky: #62C4DA;
-  --bg: var(--honeydew); --surface: #ffffff; --ink: #3a1416; --muted: #7a4a44; --line: #f0dfc4;
-  --accent: var(--tomato); --accent-ink: #ffffff; --soft: var(--peach);
-  --hit: var(--sky); --hit-ink: #0d3640; --near: var(--coral); --near-ink: #3a1416; --off: #f3ebdd; --off-ink: #6b4a42;
+  --bg: #EBDDBC; --surface: #ffffff; --ink: #3a1416; --muted: #7a4a44; --line: #e6d6b6;
+  --accent: var(--tomato); --accent-ink: #ffffff; --accent-text: #9e2a2c; --soft: var(--peach);
+  --hit: #6BBF8A; --hit-ink: #0f3320; --near: #F2C14E; --near-ink: #3a1416; --off: #f3ebdd; --off-ink: #6b4a42;
   --shadow: 0 1px 2px rgba(201,54,56,.06), 0 8px 24px rgba(201,54,56,.07);
   --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -38,10 +38,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .clues { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
 .clue { border: 1px solid var(--line); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .clue.fixed { background: var(--soft); border-color: transparent; }
-.clue.fixed .rule { color: var(--ink); opacity: .75; }
-.clue .ic { font-size: 18px; line-height: 1.1; }
+.clue.fixed .rule { color: var(--ink); opacity: .8; }
 .clue .nm { font-weight: 700; font-size: 13px; line-height: 1.2; }
-.clue .rule { font-size: 11.5px; color: var(--muted); line-height: 1.3; }
+.clue .rule { font-size: 11.5px; color: var(--muted); line-height: 1.3; display: none; }
+.clues.show-rules .rule { display: block; }
+.lineup-tools { display: inline-flex; align-items: center; gap: 12px; }
+.rules-btn { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 4px 10px;
+  font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.rules-btn:hover { border-color: var(--muted); }
+.rules-btn .q { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: var(--soft); font-size: 11px; font-weight: 700; }
+.rules-btn[aria-expanded="true"] { background: var(--soft); border-color: transparent; }
+.rules-btn[aria-expanded="true"] .q { background: var(--surface); }
 @media (max-width: 560px) { .clues { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 
 .guessbar { position: relative; display: flex; flex-direction: column; gap: 6px; }
@@ -102,7 +109,7 @@ body { margin: 0; }
 .logo .beta { background: var(--soft); color: var(--ink); }
 .foot-links { display: flex; flex-wrap: wrap; gap: 6px 16px; }
 .foot a { color: var(--ink); text-underline-offset: 2px; }
-.foot a:hover { color: var(--accent); }
+.foot a:hover { color: var(--accent-text); }
 #game:not([hidden]) { display: contents; }   /* keeps .wrap's gap between the game blocks */
 .loading { color: var(--muted); font-size: 14px; padding: 18px 0; }
 
@@ -112,4 +119,4 @@ body { margin: 0; }
 .doc h2 { font-family: var(--f-display); font-weight: 700; font-size: 15px; margin: 28px 0 6px; }
 .doc p, .doc li { max-width: 62ch; }
 .doc .meta { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
-.doc a { color: var(--accent); }
+.doc a { color: var(--accent-text); }

@@ -42,7 +42,7 @@ const store = {
 };
 
 // ---------- State ----------
-const EMOJI = { hit: "🟦", near: "🟧", off: "⬜" };   // matches the board: Sky Blue exact, Coral close
+const EMOJI = { hit: "🟩", near: "🟨", off: "⬜" };
 let mode = "daily", filter = "all", puz, guesses = [], over = false;
 const FILTER_LABEL = { all: "", girl: " · Girl groups", boy: " · Boy groups" };
 const input = $("guess"), sugg = $("sugg"), board = $("board"), endEl = $("end"), msg = $("msg");
@@ -61,14 +61,14 @@ function startDaily() {
 function startPractice() { mode = "practice"; puz = practicePuzzle(filter, puz && puz.answer.id); guesses = []; over = false; render(false); }
 
 function renderLineup() {
-  $("clues").innerHTML = cols().map((c, i) => `<div class="clue${i === 0 ? " fixed" : ""}"><span class="ic" aria-hidden="true">${c.icon}</span><span class="nm">${esc(c.name)}</span><span class="rule">${i === 0 ? "Always on · " : ""}${esc(c.rule)}</span></div>`).join("");
+  $("clues").innerHTML = cols().map((c, i) => `<div class="clue${i === 0 ? " fixed" : ""}"><span class="nm">${esc(c.name)}</span><span class="rule">${i === 0 ? "Always on · " : ""}${esc(c.rule)}</span></div>`).join("");
   $("lineupTitle").textContent = mode === "daily" ? "Today's clues" : "This round's clues";
   $("diff").innerHTML = `Difficulty <b>${DIFF_NAMES[puz.band]}</b>`;
 }
 function cardHTML(g, i) {
   const won = g.id === puz.answer.id;
   const cells = cols().map((c, j) => { const r = c.cmp(g, puz.answer);
-    return `<div class="cell ${r.st}" style="animation-delay:${j * 80}ms"><span class="k">${c.icon} ${esc(c.name)}</span><span class="v">${esc(c.show(g))}</span>${r.ar ? `<span class="ar">${r.ar}</span>` : ""}</div>`; }).join("");
+    return `<div class="cell ${r.st}" style="animation-delay:${j * 80}ms"><span class="k">${esc(c.name)}</span><span class="v">${esc(c.show(g))}</span>${r.ar ? `<span class="ar">${r.ar}</span>` : ""}</div>`; }).join("");
   return `<article class="card${won ? " won" : ""}"><div class="card-head"><div class="song">${esc(g.title)} <span>— ${esc(ARTISTS[g.artist].name)}</span></div><div class="n">${i + 1}/${MAX}</div></div><div class="cells">${cells}</div></article>`;
 }
 function render(animateLast) {
@@ -88,9 +88,8 @@ function render(animateLast) {
 const shareUrl = () => (CFG.siteUrl || (location.origin + location.pathname).replace(/index\.html$/, "")).replace(/\/?$/, "/") + "?utm_source=share&utm_medium=social";
 function shareText(won) {
   const head = `${mode === "daily" ? `Klue #${caseNo()}` : "Klue (practice)"}${FILTER_LABEL[filter]} — ${won ? guesses.length : "X"}/${MAX}`;
-  const icons = cols().map(c => c.icon).join("") + `  ${DIFF_NAMES[puz.band]}`;
   const rows = guesses.map(g => cols().map(c => EMOJI[c.cmp(g, puz.answer).st]).join(""));
-  return [head, icons, ...rows, "", shareUrl()].join("\n");
+  return [head, `Difficulty: ${DIFF_NAMES[puz.band]}`, ...rows, "", shareUrl()].join("\n");
 }
 function renderEnd() {
   if (!over) { endEl.hidden = true; return; }
@@ -200,6 +199,15 @@ document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => {
   filter = b.dataset.f; store.set("filter", filter);
   mode === "daily" ? startDaily() : startPractice();
 });
+
+// "What do these mean?": clue explanations are hidden until asked for (stays open across rounds until closed)
+$("rulesBtn").onclick = () => {
+  const open = $("rulesBtn").getAttribute("aria-expanded") !== "true";
+  $("rulesBtn").setAttribute("aria-expanded", open);
+  $("clues").classList.toggle("show-rules", open);
+  $("rulesLabel").textContent = open ? "Hide meanings" : "What do these mean?";
+  if (open) track("clue_help_opened", puz ? gameProps() : {});
+};
 
 // "Report a data error" (hidden until a form URL is set in config.js)
 const rep = $("reportLink");
