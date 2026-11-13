@@ -117,8 +117,37 @@ body { margin: 0; }
 
 /* ---------- Pop look ---------- */
 /* Polka dots and bubbles, fixed at the page edges (outside the 640px column on desktop, cropped away on phones). */
-body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: url("../dots.svg") center / cover no-repeat; }
+/* Background decoration (.deco in the HTML): bubbles, polka dots, sparkles, music notes and halftone patches,
+   fixed to the window. Every shape is anchored to an edge or corner (vw/vh offsets, clamp() sizes), so part of it shows
+   at any window width, from phones to wide desktops. Sits behind the game (z-index -1). */
+.deco { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.deco > i { position: absolute; display: block; }
+.deco svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+.dot { background: var(--cobalt); border-radius: 50%; }
+.bub { --c: var(--bubblegum); border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 10%, rgba(255,255,255,0) 26%), var(--c); }
+.bub.sky { --c: var(--bubble-sky); }
+.tone { background-image: radial-gradient(var(--cobalt) 28%, transparent 31%); background-size: 16px 16px; opacity: .22;
+  -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent); mask-image: radial-gradient(closest-side, #000 30%, transparent); }
+.t1 { width: clamp(200px, 32vw, 460px); aspect-ratio: 1; right: -60px; top: -60px; }
+.t2 { width: clamp(200px, 32vw, 460px); aspect-ratio: 1; left: -60px; bottom: -60px; }
+.t3 { width: clamp(140px, 20vw, 280px); aspect-ratio: 1; left: -50px; top: 26vh; }
+.d1 { width: clamp(110px, 16vw, 240px); aspect-ratio: 1; left: calc(clamp(110px, 16vw, 240px) * -.55); top: 17vh; }   /* below the header: never behind the logo */
+.d2 { width: clamp(70px, 10vw, 150px); aspect-ratio: 1; right: calc(clamp(70px, 10vw, 150px) * -.35); top: 9vh; }
+.d3 { --c: var(--bubble-sky); width: clamp(90px, 13vw, 200px); aspect-ratio: 1; left: calc(clamp(90px, 13vw, 200px) * -.4); bottom: 7vh; }
+.d4 { width: clamp(130px, 19vw, 280px); aspect-ratio: 1; right: calc(clamp(130px, 19vw, 280px) * -.35); bottom: calc(clamp(130px, 19vw, 280px) * -.3); }
+.d5 { width: clamp(36px, 4.5vw, 64px); aspect-ratio: 1; right: -12px; top: 44vh; }
+.d6 { width: clamp(32px, 4vw, 56px); aspect-ratio: 1; left: -10px; top: 62vh; }
+.spark { aspect-ratio: 1; }
+.s1 { width: clamp(22px, 2.8vw, 42px); right: 5vw; top: 10px; color: var(--bubblegum); }
+.s2 { width: clamp(18px, 2.4vw, 36px); left: 3vw; top: 40vh; color: var(--cobalt); }
+.s3 { width: clamp(20px, 2.6vw, 40px); right: 3.5vw; bottom: 30vh; color: #ffffff; }
+.s4 { width: clamp(16px, 2vw, 30px); left: 6vw; bottom: 20vh; color: var(--bubblegum); }
+.s5 { width: clamp(14px, 1.6vw, 24px); right: 12vw; top: 46px; color: var(--cobalt); }
+.note { aspect-ratio: 1; }
+.n1 { width: clamp(22px, 3vw, 44px); left: 2vw; top: 80vh; color: var(--cobalt); transform: rotate(-12deg); }
+.n2 { width: clamp(20px, 2.8vw, 40px); right: 2vw; top: 26vh; color: var(--bubblegum); transform: rotate(10deg); }
+.n3 { width: clamp(18px, 2.2vw, 32px); right: 7vw; top: 66vh; color: var(--navy); transform: rotate(-6deg); }
 button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
 .logo { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw, 46px); letter-spacing: .01em;
@@ -134,7 +163,7 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .card { border-radius: 14px; }
 .card.won { border-color: var(--cobalt); box-shadow: 4px 4px 0 var(--hit); }
 .guessbar input { border-radius: 14px; }
-.guessbar input:disabled { opacity: 1; background: #fff7d1; color: var(--muted); }
+.guessbar input:disabled { opacity: 1; background: #eef2ff; color: var(--muted); }
 .lineup-head h2, .end h2 { font-family: var(--f-display); font-weight: 400; letter-spacing: .02em; color: var(--cobalt); }
 .lineup-head h2 { font-size: 16px; }
 .end h2 { font-size: 26px; }
@@ -154,7 +183,9 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .rules-btn { border: 2px solid var(--cobalt); color: var(--cobalt); }
 .rules-btn .q { background: var(--bubblegum); color: var(--navy); }
 .rules-btn[aria-expanded="true"] { background: var(--soft); border-color: var(--cobalt); }
-.share { background: #fff7d1; border-color: var(--line); }
+/* Share box: pale bubblegum ticket with a dashed cobalt edge; Righteous, like the other labels (display only: copied text is unchanged) */
+.share { background: #FFE6F3; border: 2px dashed var(--cobalt); border-radius: 14px; color: var(--navy);
+  font-family: var(--f-label); font-weight: 400; font-size: 15px; line-height: 1.6; letter-spacing: .01em; padding: 12px 16px; }
 
 /* Things sitting straight on the lemon ground */
 .empty { border: 2.5px dashed var(--cobalt); color: var(--cobalt-deep); background: rgba(255, 255, 255, .35); }
@@ -170,3 +201,10 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .doc p, .doc li { max-width: 62ch; }
 .doc .meta { font-family: var(--f-label); font-size: 12px; color: var(--muted); font-weight: 400; }
 .doc a { color: var(--accent-text); }
+
+/* Text that sits on the lemon ground gets its own backing, so the fixed decorations never sit behind words while the
+   page scrolls past them. (The logo and case line only ever move up, away from every shape, so they need none.) */
+.foot { background: #ffffff; border: var(--stroke); box-shadow: var(--pop); border-radius: 18px; padding: 16px 18px; margin-top: 8px; }
+.guessbar label span { background: var(--lemon); padding: 2px 9px; margin: 0 -9px; border-radius: 999px; }
+.msg:not(:empty) { background: var(--lemon); width: fit-content; padding: 2px 10px; border-radius: 999px; }
+.empty { background: #fff4b8; }

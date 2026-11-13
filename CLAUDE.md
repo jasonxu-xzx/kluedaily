@@ -43,7 +43,10 @@ history and launch checklist.
 - Look ("pop", approved by the owner): aesthetic reference is 2020s K-pop pop-art album branding (the look only:
   never copy album art, logos or wordmarks). Lemon #FFE14F ground, cobalt #1F46C8 ink/outlines, bubblegum
   #FF8AC8 accent; white sticker cards (2.5px cobalt outline + 4px hard offset shadow); pill buttons/toggles;
-  `site/dots.svg` polka dots/bubbles at the page edges (cropped away on phones). Fonts: Bagel Fat One (logo,
+  background decoration = `.deco` block in index/privacy HTML (bubbles, polka dots, sparkles, music notes,
+  halftone patches), fixed and anchored to window edges/corners so some always show at any width. Rule: decorations
+  never sit behind text on the lemon; text there gets a backing (footer is a white sticker card, label/message pills).
+  Share box: pale bubblegum #FFE6F3 with dashed cobalt edge, Righteous. Fonts: Bagel Fat One (logo,
   headings, stat numbers; one weight), Righteous (small labels), IBM Plex Sans KR (body), IBM Plex Mono (share box,
   arrows). Tokens + "Pop look" section in `site/assets/style.css`. One theme, no dark mode.
   Tried and rejected: Honeydew/Tomato palette (too flat), Cerulean/Old Lace (looked good, not "K-pop").
