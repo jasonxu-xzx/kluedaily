@@ -6,9 +6,10 @@ Working title was "Chart Detective" (the history below and the `archive/` files 
 
 **Play locally:** `npm run serve`, then open http://localhost:8787.
 **After editing songs/artists:** `npm run schedule` (keeps today and tomorrow fixed, reschedules the rest).
-**Deploy:** Cloudflare Pages, framework preset "None", build command empty, output directory `site`.
-**Before launch:** fill in the PostHog key and report-form URL in `site/assets/config.js`, and set up the
-`hello@kluedaily.com` forwarding (`TODO(contact)` in `site/privacy.html`).
+**Deploy:** push to `main` on GitHub (jasonxu-xzx/kluedaily); Cloudflare Pages deploys `site/` automatically
+(preset "None", no build command, output directory `site`). Live at https://kluedaily.com; `www` 301-redirects
+to it via a Cloudflare Redirect Rule. `hello@kluedaily.com` forwards via Cloudflare Email Routing.
+**Settings:** PostHog key, report-form URL and site URL live in `site/assets/config.js`.
 **Preview image:** edit `tools/og.html`, then `powershell -File tools/make-images.ps1`.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
@@ -35,17 +36,20 @@ Web search missed both competitors; check X, TikTok and fan Discords too.
 **Before soft launch**
 - [ ] Apply data corrections
 - [x] Final name: **Klue**; domain **kluedaily.com** (Namecheap)
-- [ ] Search X/TikTok/Discord for other K-pop games called "Klue"
-- [ ] Point kluedaily.com's nameservers at Cloudflare (needed for the apex domain on Pages)
+- [x] Searched X/Google for other games called "Klue": none similar found
+- [x] kluedaily.com nameservers on Cloudflare
 - [x] Data split into `site/data/songs.json` + `artists.json`
 - [x] Standalone page: head tags, Open Graph preview image, favicon
-- [x] PostHog analytics with the events listed in CLAUDE.md (code done; add the key in `config.js`)
+- [x] PostHog analytics with the events listed in CLAUDE.md (key set, events verified)
 - [x] Share text includes URL with `utm_source=share` (+ native share button on phones)
-- [x] Privacy policy page (add a contact email)
-- [x] "Report a data error" link (code done; add the Google Form URL in `config.js`)
+- [x] Privacy policy page, contact hello@kluedaily.com (Email Routing)
+- [x] "Report a data error" link (Google Form)
 - [x] Stable daily schedule (`data/schedule.json`, `npm run schedule` after every data change)
-- [ ] Weekly GitHub Action running `npm run check` so the schedule never runs out
-- [ ] GitHub repo → Cloudflare Pages → custom domain
+- [x] Weekly GitHub Action running `npm run check` so the schedule never runs out
+- [x] GitHub repo → Cloudflare Pages → kluedaily.com (+ www redirect)
+- [ ] Cloudflare: SSL/TLS → Edge Certificates → "Always Use HTTPS" on (http:// currently doesn't redirect)
+- [ ] PostHog: filter out test traffic (`$host` contains localhost / pages.dev); build retention + share-rate insights
+- [ ] Phone check on the live site: play, share, link preview card in Discord/iMessage
 
 **Soft launch (late Nov)**
 - [ ] 20–50 players: friends + one fan Discord, for one week
