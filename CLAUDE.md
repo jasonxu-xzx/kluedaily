@@ -40,8 +40,13 @@ history and launch checklist.
 - Month and season never appear on the same day (`CLASH`).
 - Feedback: exact = green (🟩 in share text), close = yellow (🟨), off = pale (⬜). Jason's call: keep
   green/yellow, players read them by habit. ↑↓ for numbers; ← → for letters (alphabetical).
-- Look: single light theme from the Klue palette (Soft Peach, Coral Glow, Tomato Jam accent, Sky Blue) on a
-  deeper sand page ground (#EBDDBC) so cards stand out; tokens at the top of `site/assets/style.css`. No dark mode.
+- Look ("pop", approved by Jason): aesthetic reference is 2020s K-pop pop-art album branding (the look only:
+  never copy album art, logos or wordmarks). Lemon #FFE14F ground, cobalt #1F46C8 ink/outlines, bubblegum
+  #FF8AC8 accent; white sticker cards (2.5px cobalt outline + 4px hard offset shadow); pill buttons/toggles;
+  `site/dots.svg` polka dots/bubbles at the page edges (cropped away on phones). Fonts: Bagel Fat One (logo,
+  headings, stat numbers; one weight), Righteous (small labels), IBM Plex Sans KR (body), IBM Plex Mono (share box,
+  arrows). Tokens + "Pop look" section in `site/assets/style.css`. One theme, no dark mode.
+  Tried and rejected: Honeydew/Tomato palette (too flat), Cerulean/Old Lace (looked good, not "K-pop").
 - Clue categories show names only (no emoji). Their explanations are hidden behind the
   "What do these mean?" button in the lineup header (event `clue_help_opened`). Share text: header,
   "Difficulty: X", emoji rows, URL.

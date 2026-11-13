@@ -1,30 +1,33 @@
 <!doctype html>
 <!-- Source for site/og.png (1200x630) and site/apple-touch-icon.png. Rebuild with: powershell -File tools/make-images.ps1 -->
 <html><head><meta charset="utf-8">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Righteous&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Righteous&display=swap">
 <style>
   html, body { margin: 0; }
-  body { width: 1200px; height: 630px; background: #EBDDBC; color: #C93638; font-family: "Unbounded", sans-serif; overflow: hidden;
-    display: grid; grid-template-columns: 1fr 470px; align-items: center; gap: 40px; padding: 0 80px; box-sizing: border-box; }
-  .chip { display: inline-block; font: 400 22px "Righteous", sans-serif; background: #FFDE96; color: #3a1416; border-radius: 6px; padding: 6px 12px; margin-bottom: 26px; letter-spacing: .04em; }
-  h1 { font-weight: 800; font-size: 170px; line-height: .9; margin: 0 0 26px; letter-spacing: -.03em; }
-  .url { color: #C93638; margin-top: 18px; }
-  p { font: 400 30px "Righteous", sans-serif; color: #7a4a44; margin: 0; line-height: 1.4; }
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
-  .grid i { aspect-ratio: 1; border-radius: 14px; background: #f8f1e3; }
-  .h { background: #6BBF8A !important; } .n { background: #F2C14E !important; }
+  body { width: 1200px; height: 630px; background: #FFE14F url("../site/dots.svg") center / cover no-repeat; color: #1F46C8;
+    font-family: "Bagel Fat One", sans-serif; overflow: hidden; position: relative;
+    display: grid; grid-template-columns: 1fr 440px; align-items: center; gap: 48px; padding: 0 96px 0 120px; box-sizing: border-box; }
+  .chip { display: inline-block; font: 400 22px "Righteous", sans-serif; background: #FF8AC8; color: #10204F; border: 3px solid #1F46C8;
+    border-radius: 999px; padding: 6px 18px; margin-bottom: 22px; letter-spacing: .04em; }
+  h1 { font-weight: 400; font-size: 190px; line-height: .9; margin: 0 0 24px; letter-spacing: .01em; text-shadow: 8px 8px 0 #FF8AC8; }
+  p { font: 400 30px "Righteous", sans-serif; color: #10204F; margin: 0; line-height: 1.35; }
+  .url { color: #1F46C8; margin-top: 16px; }
+  .card { background: #fff; border: 5px solid #1F46C8; box-shadow: 10px 10px 0 #1F46C8; border-radius: 28px; padding: 22px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .grid i { aspect-ratio: 1; border-radius: 12px; background: #f1f3fa; box-shadow: inset 0 0 0 2px #dce2f5; }
+  .h { background: #6BBF8A !important; box-shadow: none !important; } .n { background: #F2C14E !important; box-shadow: none !important; }
 </style></head>
 <body>
   <div>
-    <span class="chip">DAILY K-POP CASE</span>
+    <span class="chip">DAILY K-POP SONG GAME</span>
     <h1>KLUE</h1>
     <p>Guess the song in 8.<br>New clues every midnight KST.</p>
     <p class="url">kluedaily.com</p>
   </div>
-  <div class="grid">
+  <div class="card"><div class="grid">
     <i></i><i class="n"></i><i></i><i></i><i class="n"></i>
     <i class="h"></i><i class="n"></i><i></i><i class="n"></i><i></i>
     <i class="h"></i><i class="h"></i><i class="n"></i><i class="h"></i><i></i>
     <i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i>
-  </div>
+  </div></div>
 </body></html>

@@ -1,13 +1,14 @@
-﻿/* Klue palette: Honeydew #F6FFEA · Soft Peach #FFDE96 · Coral Glow #FA855A · Tomato Jam #C93638 · Sky Blue #62C4DA.
-   One light theme on purpose (no dark mode). Page ground is a deeper sand so white cards stand out (1.35:1).
-   Feedback stays green = exact / yellow = close / pale = off: players read those by habit. */
+﻿/* Klue "pop" look (aesthetic reference: 2020s K-pop pop-art era): lemon ground, cobalt ink and outlines,
+   bubblegum pink, sticker cards with offset shadows, bubbly display type, big polka dots at the page edges.
+   Feedback stays green = exact / yellow = close / pale = off (players read those by habit). One theme. */
 :root {
-  --honeydew: #F6FFEA; --peach: #FFDE96; --coral: #FA855A; --tomato: #C93638; --sky: #62C4DA;
-  --bg: #EBDDBC; --surface: #ffffff; --ink: #3a1416; --muted: #7a4a44; --line: #e6d6b6;
-  --accent: var(--tomato); --accent-ink: #ffffff; --accent-text: #9e2a2c; --soft: var(--peach);
-  --hit: #6BBF8A; --hit-ink: #0f3320; --near: #F2C14E; --near-ink: #3a1416; --off: #f3ebdd; --off-ink: #6b4a42;
-  --shadow: 0 1px 2px rgba(201,54,56,.06), 0 8px 24px rgba(201,54,56,.07);
-  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --lemon: #FFE14F; --cobalt: #1F46C8; --cobalt-deep: #1A3BA8; --navy: #10204F; --bubblegum: #FF8AC8; --bubble-sky: #8FD3FF;
+  --bg: var(--lemon); --surface: #ffffff; --ink: var(--navy); --muted: #4A5680; --line: #dce2f5;
+  --accent: var(--cobalt); --accent-ink: #ffffff; --accent-text: var(--cobalt-deep); --soft: #FFD6EC; --focus: #E8368A;
+  --hit: #6BBF8A; --hit-ink: #0f3320; --near: #F2C14E; --near-ink: #3a1416; --off: #f1f3fa; --off-ink: #4A5680;
+  --stroke: 2.5px solid var(--cobalt); --pop: 4px 4px 0 var(--cobalt);
+  --shadow: var(--pop);
+  --f-display: "Bagel Fat One", "Arial Black", system-ui, sans-serif;
   --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;   /* share box + arrows only */
   --f-label: "Righteous", "Unbounded", system-ui, sans-serif;   /* small labels, counters, case line (one weight: 400) */
@@ -114,10 +115,58 @@ body { margin: 0; }
 #game:not([hidden]) { display: contents; }   /* keeps .wrap's gap between the game blocks */
 .loading { color: var(--muted); font-size: 14px; padding: 18px 0; }
 
+/* ---------- Pop look ---------- */
+/* Polka dots and bubbles, fixed at the page edges (outside the 640px column on desktop, cropped away on phones). */
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: url("../dots.svg") center / cover no-repeat; }
+button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+.logo { font-family: var(--f-display); font-weight: 400; font-size: clamp(34px, 9vw, 46px); letter-spacing: .01em;
+  color: var(--cobalt); text-shadow: 3px 3px 0 var(--bubblegum); }
+.logo .chip, .logo .beta { background: var(--bubblegum); color: var(--navy); border: 2px solid var(--cobalt); border-radius: 999px;
+  padding: 2px 9px; vertical-align: 12px; text-shadow: none; font-size: 12px; }
+.caseline, .guessbar label { color: var(--cobalt-deep); }
+.msg, .loading { color: var(--cobalt-deep); }
+
+/* Sticker cards: white, cobalt outline, hard offset shadow */
+.lineup, .card, .end, .guessbar input, .sugg { border: var(--stroke); box-shadow: var(--pop); }
+.lineup, .end { border-radius: 18px; }
+.card { border-radius: 14px; }
+.card.won { border-color: var(--cobalt); box-shadow: 4px 4px 0 var(--hit); }
+.guessbar input { border-radius: 14px; }
+.guessbar input:disabled { opacity: 1; background: #fff7d1; color: var(--muted); }
+.lineup-head h2, .end h2 { font-family: var(--f-display); font-weight: 400; letter-spacing: .02em; color: var(--cobalt); }
+.lineup-head h2 { font-size: 16px; }
+.end h2 { font-size: 26px; }
+.stats b { font-family: var(--f-display); font-weight: 400; color: var(--cobalt); }
+
+.clue { border-color: var(--line); }
+.clue.fixed { background: var(--soft); border-color: transparent; }
+.cell.off { box-shadow: inset 0 0 0 1px var(--line); }
+
+/* Pill toggles and buttons */
+.modes { background: #ffffff; border: var(--stroke); border-radius: 999px; padding: 3px; box-shadow: var(--pop); }
+.modes button { color: var(--navy); border-radius: 999px; }
+.modes button[aria-pressed="true"] { background: var(--cobalt); color: #ffffff; box-shadow: none; }
+.btn { border-radius: 999px; border: var(--stroke); box-shadow: 3px 3px 0 var(--navy); }
+.btn:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--navy); }
+.btn.ghost { background: #ffffff; color: var(--cobalt); border: var(--stroke); box-shadow: 3px 3px 0 var(--bubblegum); }
+.rules-btn { border: 2px solid var(--cobalt); color: var(--cobalt); }
+.rules-btn .q { background: var(--bubblegum); color: var(--navy); }
+.rules-btn[aria-expanded="true"] { background: var(--soft); border-color: var(--cobalt); }
+.share { background: #fff7d1; border-color: var(--line); }
+
+/* Things sitting straight on the lemon ground */
+.empty { border: 2.5px dashed var(--cobalt); color: var(--cobalt-deep); background: rgba(255, 255, 255, .35); }
+.foot { color: var(--cobalt-deep); border-top: 2.5px solid var(--cobalt); }
+.foot a { color: var(--navy); }
+.foot a:hover { color: var(--focus); }
+.legend .sw { box-shadow: 0 0 0 1.5px var(--cobalt); }
+
 /* Privacy page */
-.doc { max-width: 640px; margin: 0 auto; }
-.doc h1 { font-family: var(--f-display); font-weight: 800; font-size: clamp(22px, 6vw, 28px); margin: 8px 0 4px; }
-.doc h2 { font-family: var(--f-display); font-weight: 700; font-size: 15px; margin: 28px 0 6px; }
+.doc { max-width: 640px; margin: 0 auto; background: #ffffff; border: var(--stroke); box-shadow: var(--pop); border-radius: 18px; padding: 8px 24px 24px; }
+.doc h1 { font-family: var(--f-display); font-weight: 400; color: var(--cobalt); font-size: clamp(26px, 7vw, 34px); margin: 8px 0 4px; }
+.doc h2 { font-family: var(--f-display); font-weight: 400; color: var(--cobalt); font-size: 17px; margin: 28px 0 6px; }
 .doc p, .doc li { max-width: 62ch; }
 .doc .meta { font-family: var(--f-label); font-size: 12px; color: var(--muted); font-weight: 400; }
 .doc a { color: var(--accent-text); }
