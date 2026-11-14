@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Source for brand/kuedrop-pfp-square.jpg and brand/kuedrop-pfp-circle.jpg (2048x2048).
+     Render with: powershell -File tools/make-pfp.ps1   (?shape=square or ?shape=circle) -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap">
+<style>
+  :root { --lemon: #FFE14F; --cobalt: #1F46C8; --pink: #FF8AC8; --sky: #8FD3FF; }
+  html, body { margin: 0; width: 2048px; height: 2048px; overflow: hidden; background: #ffffff; }
+  .art { position: absolute; inset: 0; background: var(--lemon); overflow: hidden; }
+  .circle .art { border-radius: 50%; }
+  /* Ring drawn as the top layer, so shapes near the edge tuck under it instead of breaking it */
+  .circle .art::after { content: ""; position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 44px var(--cobalt); z-index: 10; }
+  .art > i { position: absolute; display: block; border-radius: 50%; }
+  .dot { background: var(--cobalt); }
+  .bub { background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 10%, rgba(255,255,255,0) 26%), var(--c, var(--pink)); }
+  .sky { --c: var(--sky); }
+  .tone { border-radius: 0 !important; background-image: radial-gradient(var(--cobalt) 28%, transparent 31%); background-size: 46px 46px; opacity: .22;
+    -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent); mask-image: radial-gradient(closest-side, #000 30%, transparent); }
+  .spark, .note { border-radius: 0 !important; }
+  .spark svg, .note svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+  .word { position: absolute; inset: 0; display: grid; place-content: center; text-align: center;
+    font-family: "Bagel Fat One", sans-serif; color: var(--cobalt); line-height: .84; letter-spacing: .01em;
+    font-size: 540px; text-shadow: 24px 24px 0 var(--pink); }
+  .circle .word { font-size: 470px; text-shadow: 20px 20px 0 var(--pink); }
+  .word span { display: block; }
+
+  /* Square: shapes run off the edges */
+  .square .t1 { width: 900px; height: 900px; right: -220px; top: -220px; }
+  .square .t2 { width: 900px; height: 900px; left: -220px; bottom: -220px; }
+  .square .d1 { width: 520px; height: 520px; left: -200px; top: -170px; }
+  .square .d2 { width: 380px; height: 380px; right: -120px; bottom: 260px; }
+  .square .d3 { width: 300px; height: 300px; left: 140px; bottom: -110px; }
+  .square .d4 { width: 120px; height: 120px; right: 330px; bottom: 120px; }
+  .square .d5 { width: 90px; height: 90px; left: 330px; top: 300px; }
+  .square .b1 { width: 340px; height: 340px; right: 110px; top: 90px; }
+  .square .s1 { width: 150px; height: 150px; left: 150px; top: 520px; color: var(--pink); }
+  .square .s2 { width: 120px; height: 120px; right: 220px; top: 560px; color: #fff; }
+  .square .s3 { width: 100px; height: 100px; right: 520px; bottom: 260px; color: var(--cobalt); }
+  .square .n1 { width: 150px; height: 150px; left: 230px; bottom: 360px; color: var(--cobalt); transform: rotate(-12deg); }
+
+  /* Circle: everything stays inside the round crop */
+  .circle .t1 { width: 760px; height: 760px; right: 120px; top: 60px; }
+  .circle .t2 { width: 760px; height: 760px; left: 120px; bottom: 60px; }
+  .circle .d1 { width: 300px; height: 300px; left: 250px; top: 250px; }
+  .circle .d2 { width: 250px; height: 250px; right: 230px; bottom: 300px; }
+  .circle .d3 { width: 210px; height: 210px; left: 470px; bottom: 140px; }
+  .circle .d4 { width: 90px; height: 90px; right: 520px; bottom: 200px; }
+  .circle .d5 { width: 70px; height: 70px; left: 600px; top: 200px; }
+  .circle .b1 { width: 260px; height: 260px; right: 300px; top: 230px; }
+  .circle .s1 { width: 120px; height: 120px; left: 230px; top: 640px; color: var(--pink); }
+  .circle .s2 { width: 100px; height: 100px; right: 250px; top: 620px; color: #fff; }
+  .circle .s3 { width: 80px; height: 80px; right: 600px; bottom: 360px; color: var(--cobalt); }
+  .circle .n1 { width: 120px; height: 120px; left: 300px; bottom: 470px; color: var(--cobalt); transform: rotate(-12deg); }
+</style></head>
+<body>
+<div class="art">
+  <i class="tone t1"></i><i class="tone t2"></i>
+  <i class="dot d1"></i><i class="dot d2"></i><i class="bub sky d3"></i><i class="dot d4"></i><i class="dot d5"></i><i class="bub b1"></i>
+  <i class="spark s1"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s2"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s3"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="note n1"><svg viewBox="0 0 24 24"><path d="M9 2.5 21 0v15.2a3.6 3.6 0 1 1-2-3.2V5.1L11 6.6v11.6a3.6 3.6 0 1 1-2-3.2Z"/></svg></i>
+  <div class="word"><span>Kue</span><span>Drop</span></div>
+</div>
+<script>document.body.className = new URLSearchParams(location.search).get("shape") === "circle" ? "circle" : "square";</script>
+</body></html>
