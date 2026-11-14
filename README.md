@@ -12,6 +12,10 @@ kluedaily.com 301-redirect to it via Cloudflare Redirect Rules. `hello@kuedrop.c
 **Settings:** PostHog key, report-form URL and site URL live in `site/assets/config.js`.
 **Preview image:** edit `tools/og.html`, run `powershell -File tools/make-images.ps1`, then bump `og.png?v=N` in
 `site/index.html` (both tags). iMessage/Discord cache by image URL and keep showing the old picture otherwise.
+**Daily social posts:** `npm run social` renders "Today's KueDrop!" for today's case (Instagram + Threads 1080×1350,
+X 1600×900) plus a caption into `brand/daily/` (git-ignored). `-- --tomorrow`, `-- --date YYYY-MM-DD`, `-- --case N`,
+`-- --filter girl|boy`. Template: `tools/social.html`. Shows the 4 clue categories and difficulty, never the answer.
+**Brand images** (profile pictures, X header): `powershell -File tools/make-brand.ps1` → `brand/`.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
 ## How we got here (Nov 2026)

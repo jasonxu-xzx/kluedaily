@@ -3,3 +3,6 @@ node_modules/
 Thumbs.db
 .wrangler/
 
+
+# Daily social posts rendered by npm run social (regenerate any time)
+brand/daily/

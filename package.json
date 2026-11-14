@@ -6,6 +6,7 @@
   "scripts": {
     "serve": "node tools/serve.mjs",
     "schedule": "node tools/schedule.mjs",
-    "check": "node tools/schedule.mjs --check"
+    "check": "node tools/schedule.mjs --check",
+    "social": "node tools/make-social.mjs"
   }
 }
