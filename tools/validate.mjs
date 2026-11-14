@@ -11,16 +11,17 @@ const coreKey = s => String(s).toLowerCase().replace(/\b(entertainment|ent|music
 const KNOWN_DISTINCT = [["Big Hit Ent.", "BIGHIT MUSIC"]];
 const slug = s => String(s).toLowerCase().normalize("NFKD").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
-// Small edit distance, used to spot label/artist typos ("Starhsip" vs "Starship").
-function close(a, b) {
+// Small edit distance, used to spot label/artist typos ("Starhsip" vs "Starship"). maxDist 2 for labels; artist
+// names use 1, since real names often differ by 2 letters (NAYEON / TAEYEON, JIHYO / JISOO).
+function close(a, b, maxDist = 2) {
   if (a === b) return false;
   if (a.length > 3 && b.length > 3 && (a.startsWith(b) || b.startsWith(a))) return true;   // "sm" vs "sment" is too short to judge
-  if (Math.abs(a.length - b.length) > 2 || Math.min(a.length, b.length) < 5) return false;
+  if (Math.abs(a.length - b.length) > maxDist || Math.min(a.length, b.length) < 5) return false;
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
   for (let j = 1; j <= b.length; j++) d[0][j] = j;
   for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
     d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
-  return d[a.length][b.length] <= 2;
+  return d[a.length][b.length] <= maxDist;
 }
 
 export function validateData(artists, songs, { thisYear = new Date().getUTCFullYear() } = {}) {
@@ -44,7 +45,7 @@ export function validateData(artists, songs, { thisYear = new Date().getUTCFullY
   const names = Object.entries(artists).map(([k, a]) => [k, key(a.name || "")]);
   for (let i = 0; i < names.length; i++) for (let j = i + 1; j < names.length; j++) {
     if (names[i][1] === names[j][1]) E(`artists "${names[i][0]}" and "${names[j][0]}" have the same name`);
-    else if (close(names[i][1], names[j][1])) W(`artist names look alike: "${artists[names[i][0]].name}" / "${artists[names[j][0]].name}" (typo?)`);
+    else if (close(names[i][1], names[j][1], 1)) W(`artist names look alike: "${artists[names[i][0]].name}" / "${artists[names[j][0]].name}" (typo?)`);
   }
 
   // ---------- Songs ----------
