@@ -1,0 +1,74 @@
+<!doctype html>
+<!-- Source for brand/kuedrop-x-header.jpg (3000x1000 = 2x X's 1500x500). Render with: powershell -File tools/make-brand.ps1
+     X layout: the profile picture covers the bottom-left (~x 90-500, y 640-1000 at this size) and phones crop the top and
+     bottom (~120px each), so all text sits in the middle band, centered right of the avatar. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Righteous&display=swap">
+<style>
+  :root { --lemon: #FFE14F; --cobalt: #1F46C8; --navy: #10204F; --pink: #FF8AC8; --sky: #8FD3FF; --hit: #6BBF8A; --near: #F2C14E; }
+  html, body { margin: 0; width: 3000px; height: 1000px; overflow: hidden; background: var(--lemon); }
+  .art > i { position: absolute; display: block; border-radius: 50%; }
+  .dot { background: var(--cobalt); }
+  .bub { background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 10%, rgba(255,255,255,0) 26%), var(--c, var(--pink)); }
+  .sky { --c: var(--sky); }
+  .tone { border-radius: 0 !important; background-image: radial-gradient(var(--cobalt) 28%, transparent 31%); background-size: 40px 40px; opacity: .22;
+    -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent); mask-image: radial-gradient(closest-side, #000 30%, transparent); }
+  .spark, .note { border-radius: 0 !important; }
+  .spark svg, .note svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+
+  /* decorations: edges and corners, nothing behind the text block */
+  .t1 { width: 900px; height: 900px; right: -200px; top: -330px; }
+  .t2 { width: 760px; height: 760px; left: 520px; bottom: -380px; }
+  .t3 { width: 640px; height: 640px; left: -200px; top: -200px; }
+  .d1 { width: 420px; height: 420px; left: -150px; top: -120px; }
+  .d2 { width: 330px; height: 330px; right: -110px; bottom: -120px; }
+  .d3 { width: 90px; height: 90px; left: 360px; top: 120px; }
+  .d4 { width: 70px; height: 70px; right: 640px; bottom: 90px; }
+  .d5 { width: 54px; height: 54px; left: 820px; top: 70px; }
+  .b1 { width: 230px; height: 230px; right: 470px; top: 20px; }
+  .b2 { width: 200px; height: 200px; left: 640px; top: 230px; }
+  .s1 { width: 110px; height: 110px; left: 300px; top: 420px; color: var(--pink); }
+  .s2 { width: 90px; height: 90px; right: 230px; top: 470px; color: #fff; }
+  .s3 { width: 74px; height: 74px; left: 1040px; bottom: 120px; color: var(--cobalt); }
+  .s4 { width: 64px; height: 64px; right: 1020px; top: 90px; color: var(--pink); }
+  .n1 { width: 110px; height: 110px; right: 1080px; bottom: 110px; color: var(--cobalt); transform: rotate(10deg); }
+
+  /* text block: right of the avatar, inside the middle band */
+  .copy { position: absolute; left: 1020px; top: 50%; transform: translateY(-52%); display: flex; flex-direction: column; align-items: flex-start; gap: 26px; }
+  .chip { font: 400 40px "Righteous", sans-serif; letter-spacing: .05em; background: var(--pink); color: var(--navy);
+    border: 5px solid var(--cobalt); border-radius: 999px; padding: 8px 30px; }
+  .word { font: 400 236px/0.9 "Bagel Fat One", sans-serif; color: var(--cobalt); letter-spacing: .01em; text-shadow: 14px 14px 0 var(--pink); margin: 4px 0 6px; }
+  .tag { font: 400 58px/1.25 "Righteous", sans-serif; color: var(--navy); }
+  .url { font: 400 54px "Righteous", sans-serif; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 10px 40px; box-shadow: 8px 8px 0 var(--navy); margin-top: 8px; }
+
+  /* tile-grid sticker, far right */
+  .card { position: absolute; right: 150px; top: 50%; transform: translateY(-50%) rotate(4deg); background: #fff; border: 8px solid var(--cobalt);
+    box-shadow: 16px 16px 0 var(--cobalt); border-radius: 36px; padding: 26px; }
+  .grid { display: grid; grid-template-columns: repeat(5, 74px); gap: 12px; }
+  .grid i { width: 74px; height: 74px; border-radius: 14px; background: #f1f3fa; box-shadow: inset 0 0 0 3px #dce2f5; }
+  .grid .h { background: var(--hit); box-shadow: none; } .grid .n { background: var(--near); box-shadow: none; }
+</style></head>
+<body>
+<div class="art">
+  <i class="tone t1"></i><i class="tone t2"></i><i class="tone t3"></i>
+  <i class="dot d1"></i><i class="dot d2"></i><i class="dot d3"></i><i class="dot d4"></i><i class="dot d5"></i>
+  <i class="bub b1"></i><i class="bub sky b2"></i>
+  <i class="spark s1"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s2"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s3"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s4"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="note n1"><svg viewBox="0 0 24 24"><path d="M9 2.5 21 0v15.2a3.6 3.6 0 1 1-2-3.2V5.1L11 6.6v11.6a3.6 3.6 0 1 1-2-3.2Z"/></svg></i>
+</div>
+<div class="copy">
+  <span class="chip">DAILY K-POP SONG GAME</span>
+  <div class="word">KueDrop</div>
+  <div class="tag">Guess today's K-pop song in 8 tries.<br>New clues every midnight KST.</div>
+  <span class="url">kuedrop.com</span>
+</div>
+<div class="card"><div class="grid">
+  <i></i><i class="n"></i><i></i><i></i><i class="n"></i>
+  <i class="h"></i><i class="n"></i><i></i><i class="n"></i><i></i>
+  <i class="h"></i><i class="h"></i><i class="n"></i><i class="h"></i><i></i>
+  <i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i><i class="h"></i>
+</div></div>
+</body></html>
