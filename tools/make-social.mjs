@@ -5,8 +5,10 @@
 //   npm run social -- --date 2026-11-24 a specific KST date      (or --case 5)
 //   npm run social -- --filter girl     the Girl groups case       (all | girl | boy)
 //
-// Output (git-ignored): brand/daily/kuedrop-<date>-case<N>[-<filter>]-{instagram,threads,x}.png + -caption.txt
-//   instagram / threads: 1080x1350 (4:5)    x: 1600x900 (16:9)
+//   npm run social -- --copy x          also put a caption on the clipboard   (meta | x | threads)
+//
+// Output (git-ignored): brand/daily/kuedrop-<date>-case<N>[-<filter>]-{instagram,threads,x}.png
+//   + -caption-{meta,x,threads}.txt (also printed)   instagram / threads: 1080x1350 (4:5)    x: 1600x900 (16:9)
 // Only the clue categories and difficulty are shown, never the answer.
 import fs from "node:fs";
 import path from "node:path";
@@ -63,13 +65,58 @@ fs.copyFileSync(ig, th);   // Threads uses the same 4:5 post
 shot("landscape", "1600,900", x);
 try { fs.rmSync(profile, { recursive: true, force: true }); } catch { /* Edge may still hold it briefly */ }
 
-const caption = `Today's KueDrop! 🎤 Case #${caseNo} · ${DIFF_NAMES[entry.band]}${data.filter ? " · " + data.filter : ""}
-Today's clues: ${clues.map(c => c.name).join(", ")} (+ Artist)
-Can you guess the K-pop song in 8 tries? 👉 kuedrop.com
+// ---------- Captions, one per platform ----------
+// Links carry UTM tags so PostHog can credit each platform's daily post (Instagram captions can't hold a clickable
+// link, so its traffic comes through the bio link: set that to kuedrop.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio).
+const link = src => `https://kuedrop.com/?utm_source=${src}&utm_medium=social&utm_campaign=daily`;
+const head = `Today's KueDrop! 🎤 Case #${caseNo} · ${label} · ${DIFF_NAMES[entry.band]}${data.filter ? " · " + data.filter : ""}`;
+const nums = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
+const captions = {
+  // Meta Business Suite: Instagram + Facebook (Facebook turns the bare domain into a link; Instagram can't link in captions)
+  meta: `${head}
 
-#KueDrop #kpop #kpopgame #dailypuzzle`;
-fs.writeFileSync(path.join(outDir, `${base}-caption.txt`), caption + "\n");
+Today's clues:
+${clues.map((c, i) => `${nums[i]} ${c.name}`).join("\n")}
+➕ Artist, always on
+
+Can you guess the K-pop song in 8 tries? 🎧
+Play free at kuedrop.com (link in bio). New case every midnight KST.
+
+#KueDrop #kpop #kpopgame #kpopquiz #guessthesong #dailypuzzle`,
+  // X: 280 characters max (checked below)
+  x: `Today's KueDrop! 🎤 Case #${caseNo} · ${DIFF_NAMES[entry.band]}${data.filter ? " · " + data.filter : ""}
+Clues: ${clues.map(c => c.name).join(" · ")} (+ Artist)
+Can you guess the K-pop song in 8 tries? 👉 ${link("x")}
+#KueDrop #kpop`,
+  // Threads: 500 characters max; only the first hashtag becomes a topic tag
+  threads: `${head}
+Today's clues: ${clues.map(c => c.name).join(", ")} (+ Artist)
+Can you guess the K-pop song in 8 tries? 👉 ${link("threads")}
+#kpop`,
+};
+
+// X counts every link as 23 characters, emoji and CJK as 2, everything else as 1.
+const xLength = s => [...s.replace(/https?:\/\/\S+/g, "x".repeat(23))]
+  .reduce((n, ch) => n + (/\p{Extended_Pictographic}|[ᄀ-ᇿ　-鿿가-힯＀-￯]/u.test(ch) ? 2 : /️|⃣/.test(ch) ? 0 : 1), 0);
+const limits = { x: [280, xLength(captions.x)], threads: [500, [...captions.threads].length], meta: [2200, [...captions.meta].length] };
+for (const [k, [max, n]] of Object.entries(limits)) if (n > max) { console.error(`The ${k} caption is ${n} characters (max ${max}).`); process.exit(1); }
+
+const capFile = k => path.join(outDir, `${base}-caption-${k}.txt`);
+for (const [k, text] of Object.entries(captions)) fs.writeFileSync(capFile(k), text + "\n");
 
 console.log(`Case #${caseNo} (${date} KST, ${filter}): ${clues.map(c => c.name).join(", ")} · ${DIFF_NAMES[entry.band]}`);
 for (const f of [ig, th, x]) console.log("  " + path.relative(root, f));
-console.log("  " + path.relative(root, path.join(outDir, `${base}-caption.txt`)));
+for (const [k, text] of Object.entries(captions)) {
+  console.log(`\n----- ${k === "meta" ? "Meta Business Suite (Instagram + Facebook)" : k === "x" ? "X" : "Threads"} · ${limits[k][1]}/${limits[k][0]} chars · ${path.relative(root, capFile(k))}`);
+  console.log(text);
+}
+
+// --copy meta|x|threads: put that caption on the clipboard (Windows / macOS)
+const copy = opt("--copy");
+if (copy) {
+  if (!captions[copy]) { console.error(`--copy must be one of ${Object.keys(captions).join(", ")}`); process.exit(1); }
+  const r = process.platform === "win32"
+    ? spawnSync("powershell", ["-NoProfile", "-Command", `Get-Content -Raw -Encoding UTF8 '${capFile(copy)}' | Set-Clipboard`])
+    : spawnSync("pbcopy", { input: captions[copy] });
+  console.log(r.status === 0 ? `\nCopied the ${copy} caption to the clipboard.` : `\nCouldn't copy to the clipboard; open ${path.relative(root, capFile(copy))} instead.`);
+}

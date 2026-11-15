@@ -13,8 +13,11 @@ kluedaily.com 301-redirect to it via Cloudflare Redirect Rules. `hello@kuedrop.c
 **Preview image:** edit `tools/og.html`, run `powershell -File tools/make-images.ps1`, then bump `og.png?v=N` in
 `site/index.html` (both tags). iMessage/Discord cache by image URL and keep showing the old picture otherwise.
 **Daily social posts:** `npm run social` renders "Today's KueDrop!" for today's case (Instagram + Threads 1080×1350,
-X 1600×900) plus a caption into `brand/daily/` (git-ignored). `-- --tomorrow`, `-- --date YYYY-MM-DD`, `-- --case N`,
-`-- --filter girl|boy`. Template: `tools/social.html`. Shows the 4 clue categories and difficulty, never the answer.
+X 1600×900) into `brand/daily/` (git-ignored), plus one caption per platform (Meta Business Suite, X, Threads; also
+printed, X checked against 280 chars). `-- --tomorrow`, `-- --date YYYY-MM-DD`, `-- --case N`, `-- --filter girl|boy`,
+`-- --copy meta|x|threads` (puts that caption on the clipboard). Template: `tools/social.html`. Shows the 4 clue
+categories and difficulty, never the answer. X/Threads links carry `utm_source=x|threads&utm_campaign=daily`; set the
+Instagram bio link to `kuedrop.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio`.
 **Brand images** (profile pictures, X header): `powershell -File tools/make-brand.ps1` → `brand/`.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
