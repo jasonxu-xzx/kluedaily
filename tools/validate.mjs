@@ -1,6 +1,6 @@
 // Data checks for site/data/songs.json + artists.json, run by tools/schedule.mjs (and so by `npm run schedule`
 // and `npm run check`). Errors block: the game would show a wrong clue or crash. Warnings are likely typos to look at.
-import { GENRES, TITLE_LANGS } from "../site/assets/engine.js";
+import { GENRES, TITLE_LANGS, COVERS } from "../site/assets/engine.js";
 
 const ID_RE = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const isInt = v => Number.isInteger(v);
@@ -69,6 +69,14 @@ export function validateData(artists, songs, { thisYear = new Date().getUTCFullY
     if (s.labelFamily !== null && typeof s.labelFamily !== "string") E(`${at}: labelFamily must be a name or null`);
     if (!Array.isArray(s.aliases) || s.aliases.some(x => typeof x !== "string")) E(`${at}: aliases must be a list of strings`);
     if (s.guessOnly !== undefined && typeof s.guessOnly !== "boolean") E(`${at}: guessOnly must be true or false`);
+    // Fan clues (B-sides use their album's cover/comeback/gap; wins are the song's own)
+    if (!isInt(s.members) || s.members < 1 || s.members > 30) E(`${at}: members must be the member count at release, 1-30 (got ${JSON.stringify(s.members)})`);
+    if (!isInt(s.wins) || s.wins < 0 || s.wins > 60) E(`${at}: wins must be the music-show first places, 0 or more (got ${JSON.stringify(s.wins)})`);
+    if (!COVERS.includes(s.cover)) E(`${at}: cover must be one of ${COVERS.join(", ")} (got ${JSON.stringify(s.cover)})`);
+    if (!isInt(s.comeback) || s.comeback < 1) E(`${at}: comeback must be the act's release number, debut = 1 (got ${JSON.stringify(s.comeback)})`);
+    else if (s.comeback === 1 && s.gapMonths !== undefined) E(`${at}: a debut (comeback 1) has no gapMonths; remove it`);
+    else if (s.comeback > 1 && (!isInt(s.gapMonths) || s.gapMonths < 0)) E(`${at}: gapMonths must be the whole months since the act's previous release (got ${JSON.stringify(s.gapMonths)})`);
+    if (a && artists[a.parent] && s.members !== 1) W(`${at}: ${a.name} is a solo member of ${artists[a.parent].name} but members is ${s.members}`);
     const t = key(s.title || "");
     if (titles.has(t)) W(`same title as ${titles.get(t)}: ${at}. OK if they're different songs; players tell them apart by artist`);
     else titles.set(t, at);

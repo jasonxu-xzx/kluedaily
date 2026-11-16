@@ -2,7 +2,8 @@
 // No DOM access in this file.
 
 export const MAX_GUESSES = 8;
-export const ROTATING = 4;
+export const FAN_PICK = 2, STAT_PICK = 2;   // daily lineup: Artist + 2 fan clues + 2 stat clues
+export const ROTATING = FAN_PICK + STAT_PICK;
 export const FILTERS = ["all", "girl", "boy"];
 export const DIFF_NAMES = ["Easy", "Easy", "Medium", "Medium", "Tricky", "Hard", "Hard"];
 
@@ -23,14 +24,19 @@ export function mulberry32(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; l
 export function hashStr(s) { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
 
 const TIERS = ["No MV", "<10M", "10–50M", "50–100M", "100–300M", "300M–1B", "1B+"];
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-const SEASONS = ["Winter", "Spring", "Summer", "Fall"];
-const LANG = { EN: "English", KR: "Korean", MIX: "Mixed" };
-const GENRE_NEAR = { "Dance-pop": ["EDM", "Latin", "Rock/Band"], "EDM": ["Dance-pop"], "Latin": ["Dance-pop"],
-  "Rock/Band": ["Dance-pop"], "Hip-hop": ["R&B"], "R&B": ["Hip-hop"] };
-const CLASH = [["month", "season"]];   // never show both on one day
-export const GENRES = Object.keys(GENRE_NEAR);      // the 6 fixed buckets
-export const TITLE_LANGS = Object.keys(LANG);
+const WIN_TIERS = ["0", "1–4", "5–9", "10+"];
+const winTier = n => n === 0 ? 0 : n < 5 ? 1 : n < 10 ? 2 : 3;
+const GAP_TIERS = ["Debut", "<3 months", "3–6 months", "6–12 months", "1 year+"];
+const gapTier = s => s.comeback === 1 ? 0 : s.gapMonths < 3 ? 1 : s.gapMonths < 6 ? 2 : s.gapMonths < 12 ? 3 : 4;
+// Cover colors: 7 hues on a wheel (neighbors are "close"), plus Black and White, which are only ever exact.
+export const COVER_WHEEL = ["Red", "Orange", "Yellow", "Green", "Blue", "Purple", "Pink"];
+export const COVERS = [...COVER_WHEEL, "Black", "White"];
+export const COVER_HEX = { Red: "#E8343A", Orange: "#FF8A2A", Yellow: "#FFD23F", Green: "#2DB36A", Blue: "#2F6BFF",
+  Purple: "#8E4FD8", Pink: "#FF7EC0", Black: "#1B1B1F", White: "#FFFFFF" };
+const ordinal = n => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
+// Still stored in songs.json (and validated), but no longer clue columns.
+export const GENRES = ["Dance-pop", "EDM", "Hip-hop", "R&B", "Rock/Band", "Latin"];
+export const TITLE_LANGS = ["EN", "KR", "MIX"];
 
 export const norm = s => s.toLowerCase().normalize("NFKC").replace(/[^\p{L}\p{N}]+/gu, "");
 const alnum = t => t.replace(/[^A-Za-z0-9]/g, "");
@@ -47,16 +53,15 @@ export function createEngine(ARTISTS, rawSongs, opts = {}) {
     const a = ARTISTS[r.artist];
     if (!a) throw new Error(`Song "${r.title}" has unknown artist "${r.artist}"`);
     const s = { id: i, slug: r.id, title: r.title, artist: r.artist, year: r.year, month: r.month,
-      company: r.label, family: r.labelFamily, sec: r.seconds, tier: r.viewTier, genre: r.genre, lang: r.titleLang, aliases: r.aliases || [],
+      company: r.label, family: r.labelFamily, sec: r.seconds, tier: r.viewTier, aliases: r.aliases || [],
+      members: r.members, wins: r.wins, cover: r.cover, comeback: r.comeback, gapMonths: r.gapMonths,
       guessOnly: !!r.guessOnly };   // guessOnly: can be guessed, never chosen as an answer
     s.keys = [s.title, ...s.aliases].map(norm);
     s.artistKeys = [a.name, ...(a.aliases || [])].map(norm);
     s.letters = alnum(s.title).length;
-    s.words = s.title.trim().split(/\s+/).length;
     s.first = alnum(s.title)[0].toUpperCase();
-    s.last = alnum(s.title).slice(-1).toUpperCase();
-    s.season = Math.floor((s.month % 12) / 3);   // Dec–Feb 0, Mar–May 1, Jun–Aug 2, Sep–Nov 3
-    s.stage = s.year - a.debut;
+    s.winTier = winTier(s.wins);
+    s.gapTier = gapTier(s);
     return s;
   });
   const BY_SLUG = new Map(SONGS.map(s => [s.slug, s]));
@@ -68,28 +73,31 @@ export function createEngine(ARTISTS, rawSongs, opts = {}) {
 
   const ARTIST_COL = { id: "artist", icon: "🎤", name: "Artist", rule: "Close = related act (solo member, sister unit)",
     show: s => ARTISTS[s.artist].name, cmp: (g, a) => ({ st: g.artist === a.artist ? "hit" : related(g.artist, a.artist) ? "near" : "off" }) };
+  // A tier scale where tier 0 ("No MV", "Debut") stands apart: it is never close to anything.
+  const tiered = (gv, av, apart0) => gv === av ? { st: "hit" } : (apart0 && (gv === 0 || av === 0)) ? { st: "off" }
+    : { st: Math.abs(gv - av) === 1 ? "near" : "off", ar: av > gv ? "↑" : "↓" };
+  const wheel = c => COVER_WHEEL.indexOf(c);
+  // kind "fan": what a fan would know about the release · kind "stat": facts about the song itself
   const COLS = [
-    { id: "year", icon: "📅", name: "Release year", rule: "Close = within 1 year", show: s => s.year, cmp: (g, a) => num(g.year, a.year, 1) },
-    { id: "month", icon: "🗓️", name: "Release month", rule: "Close = 1 month apart", show: s => MONTHS[s.month - 1],
-      cmp: (g, a) => { if (g.month === a.month) return { st: "hit" }; const d = Math.abs(g.month - a.month); return { st: d === 1 || d === 11 ? "near" : "off", ar: a.month > g.month ? "↑" : "↓" }; } },
-    { id: "season", icon: "🍂", name: "Release season", rule: "Close = neighboring season", show: s => SEASONS[s.season],
-      cmp: (g, a) => g.season === a.season ? { st: "hit" } : { st: (g.season - a.season + 4) % 4 === 2 ? "off" : "near" } },
-    { id: "views", icon: "👁️", name: "MV views", rule: "Tiers · close = next tier", show: s => TIERS[s.tier],
-      cmp: (g, a) => g.tier === a.tier ? { st: "hit" } : (g.tier === 0 || a.tier === 0) ? { st: "off" } : { st: Math.abs(g.tier - a.tier) === 1 ? "near" : "off", ar: a.tier > g.tier ? "↑" : "↓" } },
-    { id: "length", icon: "⏱️", name: "Song length", rule: "Close = within 10 seconds", show: s => `${Math.floor(s.sec / 60)}:${String(s.sec % 60).padStart(2, "0")}`, cmp: (g, a) => num(g.sec, a.sec, 10) },
-    { id: "genre", icon: "🎛️", name: "Genre", rule: "Close = neighboring genre", show: s => s.genre,
-      cmp: (g, a) => ({ st: g.genre === a.genre ? "hit" : (GENRE_NEAR[g.genre] || []).includes(a.genre) ? "near" : "off" }) },
-    { id: "label", icon: "🏢", name: "Label", rule: "At release · close = same parent family", show: s => s.company,
+    { id: "members", kind: "fan", icon: "👥", name: "Members", rule: "At release · close = ±1", show: s => s.members, cmp: (g, a) => num(g.members, a.members, 1) },
+    { id: "wins", kind: "fan", icon: "🏆", name: "Music show wins", rule: "First places · 0 / 1–4 / 5–9 / 10+ · close = next tier",
+      show: s => WIN_TIERS[s.winTier], cmp: (g, a) => tiered(g.winTier, a.winTier, false) },
+    { id: "cover", kind: "fan", icon: "🎨", name: "Cover color", rule: "Main color of the release cover · close = neighboring color", show: s => s.cover,
+      cmp: (g, a) => { if (g.cover === a.cover) return { st: "hit" }; const i = wheel(g.cover), j = wheel(a.cover);
+        return { st: i >= 0 && j >= 0 && [1, COVER_WHEEL.length - 1].includes((i - j + COVER_WHEEL.length) % COVER_WHEEL.length) ? "near" : "off" }; } },
+    { id: "views", kind: "fan", icon: "👁️", name: "MV views", rule: "Tiers · close = next tier", show: s => TIERS[s.tier], cmp: (g, a) => tiered(g.tier, a.tier, true) },
+    { id: "label", kind: "fan", icon: "🏢", name: "Label", rule: "At release · close = same parent company", show: s => s.company,
       cmp: (g, a) => ({ st: g.company === a.company ? "hit" : (g.family && g.family === a.family) ? "near" : "off" }) },
-    { id: "letters", icon: "🔢", name: "Title letters", rule: "Letters + digits, no spaces · close = ±1", show: s => s.letters, cmp: (g, a) => num(g.letters, a.letters, 1) },
-    { id: "words", icon: "📝", name: "Title words", rule: "Close = ±1 word", show: s => s.words, cmp: (g, a) => num(g.words, a.words, 1) },
-    { id: "first", icon: "🔤", name: "First letter", rule: "Close = within 2 letters", show: s => s.first, cmp: (g, a) => letter(g.first, a.first) },
-    { id: "last", icon: "🔚", name: "Last letter", rule: "Close = within 2 letters", show: s => s.last, cmp: (g, a) => letter(g.last, a.last) },
-    { id: "lang", icon: "🌐", name: "Title language", rule: "Original title · close = one side mixed", show: s => LANG[s.lang],
-      cmp: (g, a) => ({ st: g.lang === a.lang ? "hit" : (g.lang === "MIX" || a.lang === "MIX") ? "near" : "off" }) },
-    { id: "stage", icon: "🪜", name: "Career stage", rule: "Years since debut · close = ±1", show: s => s.stage === 0 ? "Debut yr" : `Yr ${s.stage}`, cmp: (g, a) => num(g.stage, a.stage, 1) },
+    { id: "comeback", kind: "fan", icon: "🔁", name: "Comeback no.", rule: "Nth comeback, debut = 1st (an album and its pre-release singles count once) · close = ±1", show: s => ordinal(s.comeback), cmp: (g, a) => num(g.comeback, a.comeback, 1) },
+    { id: "gap", kind: "fan", icon: "⏳", name: "Comeback gap", rule: "Time since the previous release · close = next tier", show: s => GAP_TIERS[s.gapTier], cmp: (g, a) => tiered(g.gapTier, a.gapTier, true) },
+    { id: "year", kind: "stat", icon: "📅", name: "Release year", rule: "Close = within 1 year", show: s => s.year, cmp: (g, a) => num(g.year, a.year, 1) },
+    { id: "first", kind: "stat", icon: "🔤", name: "First letter", rule: "Close = within 2 letters", show: s => s.first, cmp: (g, a) => letter(g.first, a.first) },
+    { id: "letters", kind: "stat", icon: "🔢", name: "Title letters", rule: "Letters + digits, no spaces · close = ±1", show: s => s.letters, cmp: (g, a) => num(g.letters, a.letters, 1) },
+    { id: "length", kind: "stat", icon: "⏱️", name: "Song length", rule: "Close = within 10 seconds", show: s => `${Math.floor(s.sec / 60)}:${String(s.sec % 60).padStart(2, "0")}`, cmp: (g, a) => num(g.sec, a.sec, 10) },
   ];
   const COL_BY_ID = new Map(COLS.map(c => [c.id, c]));
+  const validLineup = cols => cols.length === ROTATING && cols.every(Boolean)
+    && cols.filter(c => c.kind === "fan").length === FAN_PICK && cols.filter(c => c.kind === "stat").length === STAT_PICK;
 
   // ---------- Song pools (F girl, M boy, X co-ed = both) ----------
   const POOLS = {
@@ -127,24 +135,24 @@ export function createEngine(ARTISTS, rawSongs, opts = {}) {
     const list = opts.lineups && opts.lineups[filter];
     if (!Array.isArray(list) || !list.length) return null;
     const out = list.map(str => ({ cols: String(str).split(",").map(id => COL_BY_ID.get(id)) }));
-    if (out.some(l => l.cols.length !== ROTATING || l.cols.some(c => !c))) { console.warn("lineups.json has unknown clue ids; scoring in the browser instead"); return null; }
+    if (out.some(l => !validLineup(l.cols))) { console.warn("lineups.json doesn't match the clue columns; scoring in the browser instead"); return null; }
     return out;
   }
+  // Every lineup = FAN_PICK of the fan columns + STAT_PICK of the stat columns (column indices into COLS).
+  const choose = (items, k, start = 0, picked = [], out = []) => {
+    if (picked.length === k) { out.push(picked); return out; }
+    for (let i = start; i < items.length; i++) choose(items, k, i + 1, [...picked, items[i]], out);
+    return out;
+  };
   function lineupsFor(filter) {
     if (lineupCache[filter]) return lineupCache[filter];
     const pre = precomputed(filter);
     if (pre) return (lineupCache[filter] = pre);
-    const pool = POOLS[filter], out = [], m = COLS.length;
-    const combo = (start, picked) => {
-      if (picked.length === ROTATING) {
-        const ids = picked.map(i => COLS[i].id);
-        if (CLASH.some(([x, y]) => ids.includes(x) && ids.includes(y))) return;
-        out.push({ cols: picked.map(i => COLS[i]), score: lineupScore(pool, picked.map(i => i + 1)) });
-        return;
-      }
-      for (let i = start; i < m; i++) combo(i + 1, [...picked, i]);
-    };
-    combo(0, []);
+    const pool = POOLS[filter], out = [], idx = kind => COLS.map((c, i) => c.kind === kind ? i : -1).filter(i => i >= 0);
+    for (const fan of choose(idx("fan"), FAN_PICK)) for (const stat of choose(idx("stat"), STAT_PICK)) {
+      const picked = [...fan, ...stat];
+      out.push({ cols: picked.map(i => COLS[i]), score: lineupScore(pool, picked.map(i => i + 1)) });
+    }
     out.sort((a, b) => a.score - b.score);
     // Drop the hardest 15% entirely; Sunday is hard, not impossible.
     return (lineupCache[filter] = out.slice(0, Math.ceil(out.length * 0.85)));
@@ -169,7 +177,7 @@ export function createEngine(ARTISTS, rawSongs, opts = {}) {
   }
   function entryToPuzzle(entry) {
     const answer = BY_SLUG.get(entry.song), cols = (entry.clues || []).map(id => COL_BY_ID.get(id));
-    if (!answer || cols.length !== ROTATING || cols.some(c => !c) || !(entry.band >= 0 && entry.band <= 6)) return null;
+    if (!answer || !validLineup(cols) || !(entry.band >= 0 && entry.band <= 6)) return null;
     return { answer, lineup: { cols }, band: entry.band, scheduled: true };
   }
   function dailyPuzzle(schedule, filter, day) {

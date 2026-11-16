@@ -42,10 +42,15 @@ history and launch checklist.
 
 ## Game rules (decided — don't change without asking)
 - Player guesses a mystery song in 8 tries.
-- Clue columns: **Artist is always shown**, plus **4 rotating columns** chosen daily from a pool of 13:
-  year, month, season, MV views (tiers), length, genre, label, title letters, title words,
-  first letter, last letter, title language, career stage.
-- Month and season never appear on the same day (`CLASH`).
+- Clue columns (since Nov 15 2026): **Artist is always shown**, plus **2 fan clues + 2 stat clues** chosen daily
+  (`kind` in engine.js COLS; 21 × 6 = 126 lineups).
+  - Fan (7): members at release (±1), music show wins (0 / 1–4 / 5–9 / 10+, close = next tier), cover color
+    (9 buckets, swatch shown; close = neighbor on the Red-Orange-Yellow-Green-Blue-Purple-Pink wheel; Black/White exact only),
+    MV views (tiers), label (close = same parent company), comeback no. (Nth release, ±1), comeback gap
+    (Debut / <3 months / 3–6 / 6–12 / 1 year+, close = next tier; Debut is never close).
+  - Stat (4): release year, first letter, title letters, song length.
+  - Dropped: month, season, genre, title words, last letter, title language, career stage (genre/titleLang stay in the data).
+  - First-week sales: considered, left out for launch.
 - Feedback: exact = green (🟩 in share text), close = yellow (🟨), off = pale (⬜). Owner's call: keep
   green/yellow, players read them by habit. ↑↓ for numbers; ← → for letters (alphabetical).
 - Look ("pop", approved by the owner): aesthetic reference is 2020s K-pop pop-art album branding (the look only:
@@ -76,10 +81,19 @@ history and launch checklist.
 - Label = company AT TIME OF RELEASE (e.g. Dynamite = Big Hit Ent., Butter = BIGHIT MUSIC).
 - Year/month = original release date. Season: Dec–Feb winter, Mar–May spring, Jun–Aug summer, Sep–Nov fall.
 - Title language = original Korean-market title (Spring Day/봄날 = Korean; God's Menu/神메뉴 = Mixed).
-- Title letters = letters + digits only, no spaces/punctuation. Words = split on spaces.
-- Career stage = release year − artist's first debut year (soloists use their group's debut).
+- Title letters = letters + digits only, no spaces/punctuation.
+- `members` = official lineup at release (members on hiatus count; soloists 1; BATTER UP 6, pre-Ahyeon).
+- `wins` = first places on The Show, Show Champion, M Countdown, Music Bank, Show! Music Core, Inkigayo (no Show K-Pop etc.).
+- `comeback` = the act's Nth comeback, **one album = one comeback** (owner's call): albums, EPs, single albums,
+  repackages, and standalone digital singles (English-language ones too) that were never an album's pre-release.
+  Pre-release singles fold into their album (Mantra + like JENNIE = Ruby; Ditto + OMG; Kitsch + I AM). Not: Japanese
+  releases, OSTs, collabs/features on others' songs, SM Station, sub-units (soloists count only their solo releases).
+  Debut = 1. `gapMonths` = whole months from the previous comeback to this one's first single (omitted for debuts).
+  Every song of one comeback shares its number and gap; B-sides also use the album's cover. Wins are each song's own.
+- `cover` = main color of the original release artwork: `tools/cover-colors.ps1` (iTunes Search API) writes
+  `tools/cover-colors.csv` for review; nearly-gray pixels are ignored, so a cover counts as Black/White only when < 20% is colorful.
 - Genre = one of 6 fixed buckets: Dance-pop, EDM, Hip-hop, R&B, Rock/Band, Latin
-  (neighbors in `GENRE_NEAR`). Tie-break: first genre in the label's own release description.
+  (not a clue right now; kept in the data). Tie-break: first genre in the label's own release description.
 - MV views: tiers 0 No MV · 1 <10M · 2 10–50M · 3 50–100M · 4 100–300M · 5 300M–1B · 6 1B+.
   Count the official MV wherever it was first posted. No MV is its own tier.
 - NewJeans: leave label-family questions neutral (ongoing ADOR/HYBE dispute).

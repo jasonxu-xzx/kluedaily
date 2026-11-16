@@ -1,4 +1,4 @@
-import { createEngine, MAX_GUESSES as MAX, DIFF_NAMES, DAY, KST, gameDay, caseNo } from "./engine.js";
+import { createEngine, MAX_GUESSES as MAX, DIFF_NAMES, DAY, KST, gameDay, caseNo, COVER_HEX } from "./engine.js";
 
 const CFG = window.CD_CONFIG || {};
 const track = (e, p) => { try { window.cdTrack && window.cdTrack(e, p); } catch {} };
@@ -70,7 +70,8 @@ function renderLineup() {
 function cardHTML(g, i) {
   const won = g.id === puz.answer.id;
   const cells = cols().map((c, j) => { const r = c.cmp(g, puz.answer);
-    return `<div class="cell ${r.st}" style="animation-delay:${j * 80}ms"><span class="k">${esc(c.name)}</span><span class="v">${esc(c.show(g))}</span>${r.ar ? `<span class="ar">${r.ar}</span>` : ""}</div>`; }).join("");
+    const v = c.show(g), sw = c.id === "cover" && COVER_HEX[v] ? `<i class="swatch" style="background:${COVER_HEX[v]}"></i>` : "";
+    return `<div class="cell ${r.st}" style="animation-delay:${j * 80}ms"><span class="k">${esc(c.name)}</span><span class="v">${sw}${esc(v)}</span>${r.ar ? `<span class="ar">${r.ar}</span>` : ""}</div>`; }).join("");
   return `<article class="card${won ? " won" : ""}"><div class="card-head"><div class="song">${esc(g.title)} <span>— ${esc(ARTISTS[g.artist].name)}</span></div><div class="n">${i + 1}/${MAX}</div></div><div class="cells">${cells}</div></article>`;
 }
 function render(animateLast) {
