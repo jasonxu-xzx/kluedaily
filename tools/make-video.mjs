@@ -1,13 +1,14 @@
-// Records the 15-second "solve" video (1080x1920, 9:16, H.264, silent) for Reels / TikTok / Shorts.
+// Records the 15-second "solve" video (1080x1920, 9:16, H.264 + AAC) for Reels / TikTok / Shorts.
 //
-//   npm run video            -> brand/video/kuedrop-solve.mp4   (+ frames in a temp folder, deleted after)
+//   npm run video                          -> brand/video/kuedrop-solve.mp4 with the original track from tools/make-music.mjs
+//   npm run video -- --music path/to.mp3   -> same, with your own (licensed) music instead
 //
 // How: serves site/ locally, opens it in headless Edge at phone size (Playwright), swaps today's daily case for a
 // demo case (DEMO below: an answer that isn't a daily answer in the scheduled window, so nothing is spoiled),
 // types the guesses, and records the screen with Chrome's screencast (crisp frames, not a compressed webm).
 // A hook sticker covers the empty board for the first seconds; tools/video-endcard.html is appended as the end card.
 // Analytics are switched off for the recording (analytics.js is replaced by an empty script), so no fake games reach PostHog.
-// Needs: npm i (playwright), ffmpeg (winget install Gyan.FFmpeg). No audio: add a licensed sound in the app when posting.
+// Needs: npm i (playwright), ffmpeg (winget install Gyan.FFmpeg).
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -15,6 +16,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { chromium } from "playwright";
 import { LAUNCH_DAY, DAY, KST } from "../site/assets/engine.js";
+import { renderMusic } from "./make-music.mjs";
 
 const DEMO = { song: "black-mamba", clues: ["wins", "views", "letters", "length"], band: 3, guesses: ["Magnetic", "Ditto", "Spicy", "Black Mamba"] };
 const HOOK = { pill: "Wordle, but for K-pop", line: "Can you guess the song in 8 tries?" };
@@ -78,15 +80,16 @@ cdp.on("Page.screencastFrame", ({ data, metadata, sessionId }) => {
   cdp.send("Page.screencastFrameAck", { sessionId }).catch(() => {});
 });
 await cdp.send("Page.startScreencast", { format: "jpeg", quality: 92, maxWidth: 1080, maxHeight: 1920, everyNthFrame: 1 });
-const t0 = Date.now() / 1000;
+const t0 = Date.now() / 1000, now = () => Date.now() / 1000 - t0, cues = { enters: [] };   // cues sync the music
 await sleep(2100);                                                      // hook
+cues.drop = now();
 await page.evaluate(() => document.getElementById("hook").classList.add("gone"));
 await sleep(250);
 for (const [i, g] of DEMO.guesses.entries()) {
   await page.click("input");
   await page.keyboard.type(g, { delay: 45 });
   await sleep(300);                                                     // let the suggestion list show
-  await page.keyboard.press("Enter");
+  await page.keyboard.press("Enter"); cues.enters.push(now());
   await sleep(i === DEMO.guesses.length - 1 ? 1900 : 1500);             // flip animation + a beat to read
 }
 // keep the last frame on screen until now (the screencast only sends frames when something changes)
@@ -111,10 +114,19 @@ fs.writeFileSync(path.join(tmp, "frames.txt"), list.join("\n"));
 const playLen = tEnd - t0;
 fs.mkdirSync(outDir, { recursive: true });
 const out = path.join(outDir, "kuedrop-solve.mp4");
+const total = playLen + END_SECONDS;
+// Music: the built-in original track (tools/make-music.mjs) synced to the cues, or your own file with --music <file>
+// (looped/trimmed to the video and faded out; use a track whose license allows it, e.g. one marked free for commercial use).
+const ownMusic = process.argv.includes("--music") ? path.resolve(process.argv[process.argv.indexOf("--music") + 1]) : null;
+const music = ownMusic || renderMusic(path.join(tmp, "music.wav"), { seconds: total, dropAt: cues.drop,
+  hits: cues.enters.slice(0, -1).map(t => t + 0.05), solveAt: cues.enters.at(-1) + 0.3, outroAt: playLen - XFADE });
 const args = ["-y", "-f", "concat", "-safe", "0", "-i", path.join(tmp, "frames.txt"), "-loop", "1", "-t", String(END_SECONDS + XFADE), "-i", end,
+  ...(ownMusic ? ["-stream_loop", "-1"] : []), "-i", music,
   "-filter_complex", `[0:v]scale=1080:1920:flags=lanczos,fps=${FPS},setsar=1,format=yuv420p[a];[1:v]scale=1080:1920,fps=${FPS},setsar=1,format=yuv420p[b];` +
-    `[a][b]xfade=transition=fade:duration=${XFADE}:offset=${(playLen - XFADE).toFixed(2)},format=yuv420p[v]`,
-  "-map", "[v]", "-c:v", "libx264", "-preset", "slow", "-crf", "18", "-movflags", "+faststart", "-an", out];
+    `[a][b]xfade=transition=fade:duration=${XFADE}:offset=${(playLen - XFADE).toFixed(2)},format=yuv420p[v];` +
+    `[2:a]atrim=0:${total.toFixed(2)},asetpts=N/SR/TB,afade=t=in:d=0.05,afade=t=out:st=${(total - 1.2).toFixed(2)}:d=1.2[au]`,
+  "-map", "[v]", "-map", "[au]", "-t", total.toFixed(2), "-c:v", "libx264", "-preset", "slow", "-crf", "18",
+  "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", out];
 const r = spawnSync(ffmpeg, args, { encoding: "utf8" });
 if (r.error) { console.error(`Couldn't run ffmpeg (${r.error.message}). Install it: winget install Gyan.FFmpeg`); process.exit(1); }
 if (r.status !== 0) { console.error(r.stderr.slice(-2000)); process.exit(1); }

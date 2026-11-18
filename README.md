@@ -26,10 +26,12 @@ from PostHog when `tools/posthog.local.json` holds a personal API key with query
 **Brand images** (profile pictures, X header, "how to play" carousel): `powershell -File tools/make-brand.ps1` → `brand/`
 (carousel: `tools/carousel.html`, 4 slides → `brand/carousel/`). Slide 4 says 7 AM PT: true while the US is on standard
 time; from Mar 14, 2027 (daylight saving) midnight KST is 8 AM PT.
-**Solve video** (15 s, 1080×1920, silent): `npm run video` → `brand/video/kuedrop-solve.mp4` (git-ignored). Plays a demo
+**Solve video** (15 s, 1080×1920, with music): `npm run video` → `brand/video/kuedrop-solve.mp4` (git-ignored). The music
+is an original instrumental synthesized by `tools/make-music.mjs` (no samples, so no copyright/licensing issue), synced
+to the hook, each guess and the solve; `npm run video -- --music file.mp3` uses your own licensed track instead. Plays a demo
 case in headless Edge via Playwright (`DEMO` in `tools/make-video.mjs`: pick an answer that isn't a daily answer in the
 scheduled window), hook sticker first, end card `tools/video-endcard.html` last; analytics blocked while recording.
-Needs `npm install` and ffmpeg (`winget install Gyan.FFmpeg`). Add a licensed sound in the app when posting.
+Needs `npm install` and ffmpeg (`winget install Gyan.FFmpeg`).
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
 ## How we got here (Nov 2026)
