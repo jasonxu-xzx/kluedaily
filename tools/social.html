@@ -79,6 +79,48 @@
   .cta .q { font-size: 34px; }
   .cta .url { font-size: 36px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 8px 32px; box-shadow: 6px 6px 0 var(--navy); }
   .landscape .row { display: flex; align-items: center; gap: 26px; }
+
+  /* ---------- Recap / debrief: one answer card (song, clue values, solve rate) + a CTA line ---------- */
+  .recap .page { justify-content: center; }
+  .portrait.recap .page { gap: 34px; padding: 60px 70px; }
+  .landscape.recap .page { gap: 34px; padding: 50px 90px; }
+  .recap .page > * { flex-shrink: 0; }   /* overflow must show up as page overflow, so the title fit can react */
+  .ans { background: #fff; border: 5px solid var(--cobalt); border-radius: 34px; box-shadow: 10px 10px 0 var(--pink);
+    position: relative; width: 100%; }
+  .portrait .ans { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 54px 44px 40px; gap: 12px; margin-top: 10px; }
+  .landscape .ans { display: grid; grid-template-columns: 1fr auto; align-items: center; padding: 50px 50px 40px; gap: 0 50px; margin-top: 8px; }
+  .ans .was { font-size: 28px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 4px 24px; position: absolute; top: -26px; left: 50%; transform: translateX(-50%); white-space: nowrap; }
+  .ans .left { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; min-width: 0; }
+  /* The title box has a fixed height; the font size changes to fill it (OMG big on one line, long titles on two). */
+  .ans .song { font-family: "Bagel Fat One", sans-serif; color: var(--cobalt); line-height: 1; text-shadow: 5px 5px 0 var(--pale-pink); width: 100%;
+    display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .ans .song span { display: block; }
+  .portrait .ans .song { height: 230px; }
+  .landscape .ans .song { height: 200px; }
+  .ans .by { font-size: 40px; color: var(--navy); }
+  .facts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; width: 100%; margin-top: 16px; }
+  .fact { display: flex; align-items: center; gap: 14px; background: var(--pale-pink); border-radius: 20px; padding: 10px 16px; text-align: left; }
+  .fact .ic { width: 60px; height: 60px; flex: none; background: #fff; border-radius: 50%; display: grid; place-items: center; }
+  .fact .ic svg { width: 64%; height: 64%; overflow: visible; }
+  .fact .k { font-size: 17px; color: #4A5680; line-height: 1; }
+  .fact .v { font-family: "Bagel Fat One", sans-serif; font-size: 34px; color: var(--cobalt); line-height: 1.05; display: flex; align-items: center; gap: 8px; }
+  .fact .sw { width: 26px; height: 26px; border-radius: 50%; border: 3px solid var(--cobalt); }
+  .stat { display: flex; align-items: center; gap: 30px; }
+  .portrait .stat { width: 100%; justify-content: center; margin-top: 26px; }
+  .landscape .stat { flex-direction: column; gap: 16px; text-align: center; padding-left: 10px; align-self: stretch; justify-content: center; }  .ring { position: relative; flex: none; }
+  .portrait .ring { width: 200px; height: 200px; }
+  .landscape .ring { width: 250px; height: 250px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring .pct { position: absolute; inset: 0; display: grid; place-items: center; font-family: "Bagel Fat One", sans-serif; color: var(--cobalt); }
+  .portrait .ring .pct { font-size: 64px; }
+  .landscape .ring .pct { font-size: 76px; }
+  .stat .txt { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+  .landscape .stat .txt { text-align: center; }
+  .stat .big { font-family: "Bagel Fat One", sans-serif; color: var(--cobalt); font-size: 46px; line-height: 1.02; }
+  .stat .small { font-size: 28px; color: #4A5680; }
+  .recap .cta .q { font-family: "Bagel Fat One", sans-serif; font-size: 44px; color: var(--cobalt); white-space: nowrap; text-shadow: 3px 3px 0 var(--pink); }
+  .portrait.recap .cta { flex-direction: column; gap: 18px; }
+  .portrait .ans .left { width: 100%; }
 </style></head>
 <body>
 <div class="deco">
@@ -122,14 +164,48 @@ const sample = { case: 1, date: "Fri, Nov 20", difficulty: "Tricky", filter: "",
 let d = sample;
 try { if (q.get("d")) d = JSON.parse(decodeURIComponent(escape(atob(q.get("d").replace(/-/g, "+").replace(/_/g, "/"))))); } catch (e) { console.error(e); }
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const cards = d.clues.map((c, i) => `<div class="card"><div class="icon">${icon(c.id)}</div><span class="num">${i + 1}</span>
-  <div class="name">${esc(c.name)}</div><div class="rule">${esc(c.rule)}</div></div>`).join("");
 const meta = `<div class="meta"><span>Case #${d.case}</span><span>${esc(d.date)}</span>${d.filter ? `<span>${esc(d.filter)}</span>` : ""}<span class="diff">${esc(d.difficulty)}</span></div>`;
-const plus = `<div class="plus">+ Artist, always on</div>`;
-const cta = `<div class="cta"><span class="q">Guess the song in 8 →</span><span class="url">kuedrop.com</span></div>`;
-document.getElementById("page").innerHTML = fmt === "portrait"
-  ? `<span class="chip">DAILY K-POP SONG GAME</span><div class="title">Today's<br>KueDrop!</div>${meta}<div class="cards">${cards}</div>${plus}${cta}`
-  : `<div class="row"><div class="title">Today's KueDrop!</div></div>${meta}<div class="cards">${cards}</div>
-     <div class="row">${plus}${cta}</div>`;
+const page = document.getElementById("page");
+const RECAP_SAMPLE = { kind: "recap", case: 1, date: "Fri, Nov 20", difficulty: "Tricky", filter: "", title: "How Sweet", artist: "NewJeans",
+  facts: [{ id: "members", name: "Members", value: "5" }, { id: "comeback", name: "Comeback no.", value: "4th" },
+    { id: "year", name: "Release year", value: "2024" }, { id: "first", name: "First letter", value: "H" }], rate: 63, players: 248, avg: "4.6", next: 2 };
+if (q.get("kind") === "recap" || d.kind === "recap") renderRecap(d.kind === "recap" ? d : RECAP_SAMPLE);
+else {
+  const cards = d.clues.map((c, i) => `<div class="card"><div class="icon">${icon(c.id)}</div><span class="num">${i + 1}</span>
+    <div class="name">${esc(c.name)}</div><div class="rule">${esc(c.rule)}</div></div>`).join("");
+  const plus = `<div class="plus">+ Artist, always on</div>`;
+  const cta = `<div class="cta"><span class="q">Guess the song in 8 →</span><span class="url">kuedrop.com</span></div>`;
+  page.innerHTML = fmt === "portrait"
+    ? `<span class="chip">DAILY K-POP SONG GAME</span><div class="title">Today's<br>KueDrop!</div>${meta}<div class="cards">${cards}</div>${plus}${cta}`
+    : `<div class="row"><div class="title">Today's KueDrop!</div></div>${meta}<div class="cards">${cards}</div>
+       <div class="row">${plus}${cta}</div>`;
+}
+
+// Recap / debrief: yesterday's answer, the share of players who got it, and a nudge to today's case.
+// d = { kind: "recap", case, date, difficulty, filter, title, artist, facts: [{id, name, value, swatch?}], rate, players, avg, next }
+function renderRecap(r) {
+  document.body.classList.add("recap");
+  const facts = r.facts.map(f => `<div class="fact"><div class="ic">${icon(f.id)}</div>
+    <div><div class="k">${esc(f.name)}</div><div class="v">${f.swatch ? `<i class="sw" style="background:${esc(f.swatch)}"></i>` : ""}${esc(f.value)}</div></div></div>`).join("");
+  const R = 54, L = 2 * Math.PI * R, pct = Math.max(0, Math.min(100, Math.round(r.rate)));
+  const ring = `<div class="ring"><svg viewBox="-4 -4 136 136"><circle cx="64" cy="64" r="${R}" fill="#fff" stroke="#fff" stroke-width="18"/>
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="var(--pale-pink)" stroke-width="14"/>
+    <circle cx="64" cy="64" r="${R}" fill="none" stroke="var(--pink)" stroke-width="14" stroke-linecap="round" stroke-dasharray="${L * pct / 100} ${L}"/>
+    <circle cx="64" cy="64" r="${R + 9}" fill="none" stroke="var(--cobalt)" stroke-width="4"/><circle cx="64" cy="64" r="${R - 9}" fill="none" stroke="var(--cobalt)" stroke-width="4"/></svg>
+    <div class="pct">${pct}%</div></div>`;
+  const stat = `<div class="stat">${ring}<div class="txt"><div class="big">${fmt === "portrait" ? "of players got it right" : "of players<br>got it right"}</div>${r.avg ? `<div class="small">in ${esc(r.avg)} guesses on average</div>` : ""}</div></div>`;
+  const ans = `<div class="ans"><span class="was">THE ANSWER WAS</span><div class="left"><div class="song" id="song"><span>${esc(r.title)}</span></div>
+    <div class="by">by ${esc(r.artist)}</div><div class="facts">${facts}</div></div>${stat}</div>`;
+  const cta = `<div class="cta"><span class="q">Can you guess today's KueDrop?</span><span class="url">kuedrop.com</span></div>`;
+  page.innerHTML = fmt === "portrait"
+    ? `<span class="chip">YESTERDAY'S KUEDROP</span><div class="title" style="font-size:96px">Did you get it?</div>${ans}${cta}`
+    : `<div class="row"><span class="chip">YESTERDAY'S KUEDROP</span><div class="title" style="font-size:84px">Did you get it?</div></div>${ans}${cta}`;
+  // Fit the song title into its fixed-height box: the largest font size at which it fits (wrapping as needed).
+  const el = document.getElementById("song"), span = el.firstElementChild, max = Math.round(el.clientHeight * 0.92);
+  let size = max;
+  const fits = () => el.scrollWidth <= el.clientWidth + 1 && span.offsetHeight <= el.clientHeight;
+  const fit = () => { size = max; el.style.fontSize = size + "px"; while (!fits() && size > 30) { size -= 3; el.style.fontSize = size + "px"; } };
+  fit(); document.fonts.ready.then(fit);   // measure again once Bagel Fat One has loaded
+}
 </script>
 </body></html>

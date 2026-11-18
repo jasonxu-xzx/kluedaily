@@ -7,3 +7,4 @@ Thumbs.db
 # Daily social posts rendered by npm run social (regenerate any time)
 brand/daily/
 review/
+tools/posthog.local.json

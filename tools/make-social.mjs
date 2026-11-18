@@ -7,6 +7,12 @@
 //
 //   npm run social -- --copy x          also put a caption on the clipboard   (meta | x | threads)
 //
+//   npm run social -- --recap           the debrief post for YESTERDAY's case: the answer, % of players who got it,
+//                                       "Can you guess today's KueDrop?". (--case N / --date pick the recapped case.)
+//     The solve rate comes from PostHog (game_completed, daily mode, that case + filter, on kuedrop.com) when
+//     tools/posthog.local.json exists: {"key": "phx_… personal API key with query:read", "project": "12345"}
+//     (git-ignored; optional "host", default https://us.posthog.com). Or pass it yourself: --rate 63 [--players 248 --avg 4.6]
+//
 // Output (git-ignored): brand/daily/kuedrop-<date>-case<N>[-<filter>]-{instagram,threads,x}.png
 //   + -caption-{meta,x,threads}.txt (also printed)   instagram / threads: 1080x1350 (4:5)    x: 1600x900 (16:9)
 // Only the clue categories and difficulty are shown, never the answer.
@@ -14,7 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { createEngine, gameDay, caseOfDay, dayOfCase, dateOfDay, DAY, DIFF_NAMES, FILTERS } from "../site/assets/engine.js";
+import { createEngine, gameDay, caseOfDay, dayOfCase, dateOfDay, DAY, DIFF_NAMES, FILTERS, COVER_HEX } from "../site/assets/engine.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
@@ -22,7 +28,8 @@ const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 ? args[
 const filter = opt("--filter", "all");
 if (!FILTERS.includes(filter)) { console.error(`--filter must be one of ${FILTERS.join(", ")}`); process.exit(1); }
 
-let day = gameDay();
+const recap = args.includes("--recap");
+let day = recap ? gameDay() - 1 : gameDay();
 if (args.includes("--tomorrow")) day += 1;
 if (opt("--date")) day = Math.floor(Date.parse(opt("--date") + "T00:00:00Z") / DAY);
 if (opt("--case")) day = dayOfCase(Number(opt("--case")));
@@ -38,6 +45,41 @@ const date = dateOfDay(day);
 const label = new Date(day * DAY).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
 const clues = entry.clues.map(id => { const c = E.COL_BY_ID.get(id); return { id, name: c.name, rule: c.rule }; });
 const data = { case: caseNo, date: label, difficulty: DIFF_NAMES[entry.band], filter: { all: "", girl: "Girl groups", boy: "Boy groups" }[filter], clues };
+
+// ---------- Recap: the answer, its values for that day's clues, and the solve rate ----------
+let stats = null;
+if (recap) {
+  const song = E.BY_SLUG.get(entry.song);
+  stats = await solveRate(caseNo, filter);
+  Object.assign(data, { kind: "recap", title: song.title, artist: E.ARTISTS[song.artist].name, next: caseNo + 1, ...stats,
+    facts: entry.clues.map(id => { const c = E.COL_BY_ID.get(id), v = String(c.show(song));
+      return { id, name: c.name, value: v, ...(id === "cover" && COVER_HEX[v] ? { swatch: COVER_HEX[v] } : {}) }; }) });
+}
+async function solveRate(caseNo, filter) {
+  if (opt("--rate")) return { rate: Number(opt("--rate")), players: opt("--players") || null, avg: opt("--avg") || null };
+  const cfgFile = path.join(root, "tools", "posthog.local.json");
+  const cfg = fs.existsSync(cfgFile) ? JSON.parse(fs.readFileSync(cfgFile, "utf8"))
+    : { key: process.env.POSTHOG_PERSONAL_API_KEY, project: process.env.POSTHOG_PROJECT_ID };
+  if (!cfg.key || !cfg.project) {
+    console.error("No solve rate: create tools/posthog.local.json ({\"key\": \"phx_…\", \"project\": \"12345\"}) or pass --rate 63 [--players 248 --avg 4.6].");
+    process.exit(1);
+  }
+  // One row per player (distinct_id): did they win, and in how many guesses. Internal/test traffic is excluded by host.
+  const hogql = `SELECT count() AS players, countIf(won) AS winners, round(avgIf(guesses, won), 1) AS avg_guesses FROM (
+    SELECT distinct_id, max(toString(properties.won) IN ('true', '1')) AS won, min(toFloat(properties.guesses)) AS guesses
+    FROM events WHERE event = 'game_completed' AND properties.mode = 'daily' AND properties.filter = '${filter}'
+      AND toInt(properties.case_number) = ${Number(caseNo)} AND properties.$host = 'kuedrop.com'
+    GROUP BY distinct_id)`;
+  const res = await fetch(`${(cfg.host || "https://us.posthog.com").replace(/\/$/, "")}/api/projects/${cfg.project}/query/`, {
+    method: "POST", headers: { Authorization: `Bearer ${cfg.key}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ query: { kind: "HogQLQuery", query: hogql } }),
+  });
+  if (!res.ok) { console.error(`PostHog query failed (${res.status}): ${(await res.text()).slice(0, 300)}`); process.exit(1); }
+  const [players, winners, avg] = (await res.json()).results[0] || [0, 0, null];
+  if (!players) { console.error(`PostHog has no finished daily games for Case #${caseNo} (${filter}). Pass --rate to post anyway.`); process.exit(1); }
+  if (players < 10) console.warn(`Only ${players} players finished Case #${caseNo}; the % is shaky.`);
+  return { rate: Math.round(100 * winners / players), players: String(players), avg: avg == null ? null : String(avg) };
+}
 const d = Buffer.from(JSON.stringify(data), "utf8").toString("base64url");
 
 const browser = [
@@ -50,7 +92,7 @@ if (!browser) { console.error("Edge or Chrome not found"); process.exit(1); }
 
 const outDir = path.join(root, "brand", "daily");
 fs.mkdirSync(outDir, { recursive: true });
-const base = `kuedrop-${date}-case${caseNo}${filter === "all" ? "" : "-" + filter}`;
+const base = `kuedrop-${date}-case${caseNo}${filter === "all" ? "" : "-" + filter}${recap ? "-recap" : ""}`;
 const page = pathToFileURL(path.join(root, "tools", "social.html")).href;
 const profile = fs.mkdtempSync(path.join(process.env.TEMP || "/tmp", "kuedrop-social-"));
 const shot = (format, size, out) => {
@@ -68,10 +110,29 @@ try { fs.rmSync(profile, { recursive: true, force: true }); } catch { /* Edge ma
 // ---------- Captions, one per platform ----------
 // Links carry UTM tags so PostHog can credit each platform's daily post (Instagram captions can't hold a clickable
 // link, so its traffic comes through the bio link: set that to kuedrop.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio).
-const link = src => `https://kuedrop.com/?utm_source=${src}&utm_medium=social&utm_campaign=daily`;
+const link = src => `https://kuedrop.com/?utm_source=${src}&utm_medium=social&utm_campaign=${recap ? "recap" : "daily"}`;
 const head = `Today's KueDrop! 🎤 Case #${caseNo} · ${label} · ${DIFF_NAMES[entry.band]}${data.filter ? " · " + data.filter : ""}`;
 const nums = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
-const captions = {
+const f = data.filter ? ` (${data.filter})` : "";
+const statLine = recap ? `${data.rate}% of players got it right${data.avg ? `, in ${data.avg} guesses on average` : ""}.` : "";
+const captions = recap ? {
+  meta: `KueDrop #${caseNo}${f} answer: 🎤 ${data.title} by ${data.artist}
+${statLine} Did you? 👀
+
+${data.facts.map(x => `• ${x.name}: ${x.value}`).join("\n")}
+
+Can you guess today's KueDrop? Case #${caseNo + 1} is live at kuedrop.com (link in bio).
+
+#KueDrop #kpop #${data.artist.replace(/[^\p{L}\p{N}]/gu, "")} #kpopgame #kpopquiz #guessthesong`,
+  x: `KueDrop #${caseNo}${f} was ${data.title} by ${data.artist} 🎤
+${statLine}
+Can you guess today's? Case #${caseNo + 1} 👉 ${link("x")}
+#KueDrop #kpop`,
+  threads: `KueDrop #${caseNo}${f} was ${data.title} by ${data.artist} 🎤
+${statLine} Did you get it?
+Can you guess today's KueDrop? Case #${caseNo + 1} 👉 ${link("threads")}
+#kpop`,
+} : {
   // Meta Business Suite: Instagram + Facebook (Facebook turns the bare domain into a link; Instagram can't link in captions)
   meta: `${head}
 
@@ -104,7 +165,9 @@ for (const [k, [max, n]] of Object.entries(limits)) if (n > max) { console.error
 const capFile = k => path.join(outDir, `${base}-caption-${k}.txt`);
 for (const [k, text] of Object.entries(captions)) fs.writeFileSync(capFile(k), text + "\n");
 
-console.log(`Case #${caseNo} (${date} KST, ${filter}): ${clues.map(c => c.name).join(", ")} · ${DIFF_NAMES[entry.band]}`);
+console.log(recap
+  ? `Recap of Case #${caseNo} (${date} KST, ${filter}): ${data.title} by ${data.artist} · ${data.rate}% got it${data.players ? ` (${data.players} players)` : ""}`
+  : `Case #${caseNo} (${date} KST, ${filter}): ${clues.map(c => c.name).join(", ")} · ${DIFF_NAMES[entry.band]}`);
 for (const f of [ig, th, x]) console.log("  " + path.relative(root, f));
 for (const [k, text] of Object.entries(captions)) {
   console.log(`\n----- ${k === "meta" ? "Meta Business Suite (Instagram + Facebook)" : k === "x" ? "X" : "Threads"} · ${limits[k][1]}/${limits[k][0]} chars · ${path.relative(root, capFile(k))}`);

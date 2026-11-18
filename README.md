@@ -18,6 +18,11 @@ printed, X checked against 280 chars). `-- --tomorrow`, `-- --date YYYY-MM-DD`, 
 `-- --copy meta|x|threads` (puts that caption on the clipboard). Template: `tools/social.html`. Shows the 4 clue
 categories and difficulty, never the answer. X/Threads links carry `utm_source=x|threads&utm_campaign=daily`; set the
 Instagram bio link to `kuedrop.com/?utm_source=instagram&utm_medium=social&utm_campaign=bio`.
+**Recap posts:** `npm run social -- --recap` makes the debrief for yesterday's case (the answer, its values for that
+day's clues, % of players who got it, "Can you guess today's KueDrop?"; links use `utm_campaign=recap`). The % comes
+from PostHog when `tools/posthog.local.json` holds a personal API key with query:read
+(`{"key": "phx_…", "project": "<project id>"}`, git-ignored); otherwise pass `--rate 63 [--players 248 --avg 4.6]`.
+"Players" = people who finished that daily case on kuedrop.com; "avg guesses" is over the winners.
 **Brand images** (profile pictures, X header): `powershell -File tools/make-brand.ps1` → `brand/`.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
