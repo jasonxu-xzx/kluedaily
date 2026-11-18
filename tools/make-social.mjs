@@ -60,7 +60,7 @@ async function solveRate(caseNo, filter) {
   const cfgFile = path.join(root, "tools", "posthog.local.json");
   const cfg = fs.existsSync(cfgFile) ? JSON.parse(fs.readFileSync(cfgFile, "utf8"))
     : { key: process.env.POSTHOG_PERSONAL_API_KEY, project: process.env.POSTHOG_PROJECT_ID };
-  if (!cfg.key || !cfg.project) {
+  if (!cfg.key || !cfg.project || /PASTE/.test(cfg.key + cfg.project)) {
     console.error("No solve rate: create tools/posthog.local.json ({\"key\": \"phx_…\", \"project\": \"12345\"}) or pass --rate 63 [--players 248 --avg 4.6].");
     process.exit(1);
   }

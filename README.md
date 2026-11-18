@@ -23,7 +23,13 @@ day's clues, % of players who got it, "Can you guess today's KueDrop?"; links us
 from PostHog when `tools/posthog.local.json` holds a personal API key with query:read
 (`{"key": "phx_…", "project": "<project id>"}`, git-ignored); otherwise pass `--rate 63 [--players 248 --avg 4.6]`.
 "Players" = people who finished that daily case on kuedrop.com; "avg guesses" is over the winners.
-**Brand images** (profile pictures, X header): `powershell -File tools/make-brand.ps1` → `brand/`.
+**Brand images** (profile pictures, X header, "how to play" carousel): `powershell -File tools/make-brand.ps1` → `brand/`
+(carousel: `tools/carousel.html`, 4 slides → `brand/carousel/`). Slide 4 says 7 AM PT: true while the US is on standard
+time; from Mar 14, 2027 (daylight saving) midnight KST is 8 AM PT.
+**Solve video** (15 s, 1080×1920, silent): `npm run video` → `brand/video/kuedrop-solve.mp4` (git-ignored). Plays a demo
+case in headless Edge via Playwright (`DEMO` in `tools/make-video.mjs`: pick an answer that isn't a daily answer in the
+scheduled window), hook sticker first, end card `tools/video-endcard.html` last; analytics blocked while recording.
+Needs `npm install` and ffmpeg (`winget install Gyan.FFmpeg`). Add a licensed sound in the app when posting.
 `CLAUDE.md` has the game rules, data rules and next engineering steps in compact form.
 
 ## How we got here (Nov 2026)

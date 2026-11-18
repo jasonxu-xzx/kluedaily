@@ -7,6 +7,10 @@
     "serve": "node tools/serve.mjs",
     "schedule": "node tools/schedule.mjs",
     "check": "node tools/schedule.mjs --check",
-    "social": "node tools/make-social.mjs"
+    "social": "node tools/make-social.mjs",
+    "video": "node tools/make-video.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.65.1"
   }
 }

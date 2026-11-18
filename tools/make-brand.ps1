@@ -2,6 +2,7 @@
 #   kuedrop-pfp-square.jpg  2048x2048  tools/pfp.html?shape=square
 #   kuedrop-pfp-circle.jpg  2048x2048  tools/pfp.html?shape=circle
 #   kuedrop-x-header.jpg    3000x1000  tools/header.html   (2x X's 1500x500)
+#   carousel/kuedrop-howto-1..4.jpg  1080x1350  tools/carousel.html?slide=N   ("how to play" launch carousel)
 # Run from the project root: powershell -File tools/make-brand.ps1
 $ErrorActionPreference = "Stop"
 Add-Type -AssemblyName System.Drawing
@@ -22,6 +23,9 @@ $jobs = @(
   @{ Url = (& $toUrl "pfp.html") + "?shape=circle"; Size = "2048,2048"; Out = "kuedrop-pfp-circle.jpg" },
   @{ Url = (& $toUrl "header.html");                Size = "3000,1000"; Out = "kuedrop-x-header.jpg" }
 )
+# "How to play" launch carousel (tools/carousel.html), 4 slides at 1080x1350
+foreach ($n in 1..4) { $jobs += @{ Url = (& $toUrl "carousel.html") + "?slide=$n"; Size = "1080,1350"; Out = "carousel\kuedrop-howto-$n.jpg" } }
+New-Item -ItemType Directory -Force (Join-Path $outDir "carousel") | Out-Null
 $codec = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq "image/jpeg"
 $params = New-Object System.Drawing.Imaging.EncoderParameters 1
 $params.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter ([System.Drawing.Imaging.Encoder]::Quality), 95L

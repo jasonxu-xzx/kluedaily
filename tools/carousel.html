@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- "How to play" launch carousel, 4 slides at 1080x1350 (Instagram / Threads 4:5). Rendered by tools/make-brand.ps1:
+       ?slide=1  hook        ?slide=2  tile colors + arrows
+       ?slide=3  clues change daily        ?slide=4  new case 7 AM PT / midnight KST + link
+     The example guess on slide 2 is real game output (Ditto vs. a hidden answer), so the colors/arrows are what players see. -->
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Righteous&display=swap">
+<style>
+  :root { --lemon: #FFE14F; --cobalt: #1F46C8; --navy: #10204F; --pink: #FF8AC8; --pale-pink: #FFE6F3; --sky: #8FD3FF;
+    --hit: #6BBF8A; --hit-ink: #0f3320; --near: #F2C14E; --near-ink: #3a1416; --off: #f1f3fa; --off-ink: #4A5680; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; overflow: hidden; background: var(--lemon); font-family: "Righteous", sans-serif; color: var(--navy); }
+  body { width: 1080px; height: 1350px; position: relative; }
+
+  /* background decoration (corners and edges only, as on the site) */
+  .deco > i { position: absolute; display: block; border-radius: 50%; }
+  .dot { background: var(--cobalt); }
+  .bub { background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.9) 0 10%, rgba(255,255,255,0) 26%), var(--c, var(--pink)); }
+  .sky { --c: var(--sky); }
+  .tone { border-radius: 0 !important; background-image: radial-gradient(var(--cobalt) 28%, transparent 31%); background-size: 26px 26px; opacity: .2;
+    -webkit-mask-image: radial-gradient(closest-side, #000 30%, transparent); mask-image: radial-gradient(closest-side, #000 30%, transparent); }
+  .spark { border-radius: 0 !important; }
+  .spark svg { display: block; width: 100%; height: 100%; fill: currentColor; }
+  .t1 { width: 560px; height: 560px; right: -160px; top: -170px; } .t2 { width: 520px; height: 520px; left: -170px; bottom: -150px; }
+  .d1 { width: 240px; height: 240px; left: -90px; top: -80px; } .d2 { width: 200px; height: 200px; right: -70px; bottom: -60px; }
+  .b1 { width: 130px; height: 130px; right: 60px; top: 40px; } .b2 { width: 110px; height: 110px; left: 50px; bottom: 60px; }
+  .s1 { width: 64px; height: 64px; left: 170px; top: 60px; color: var(--pink); } .s2 { width: 54px; height: 54px; right: 210px; bottom: 22px; color: #fff; }
+
+  .page { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 90px 80px 130px; gap: 34px; }
+  .slide-3 .title { font-size: 96px; }
+  .page > * { flex-shrink: 0; }
+  .chip { font-size: 30px; letter-spacing: .05em; background: var(--pink); color: var(--navy); border: 4px solid var(--cobalt); border-radius: 999px; padding: 6px 26px; }
+  .title { font-family: "Bagel Fat One", sans-serif; color: var(--cobalt); line-height: .98; text-align: center; font-size: 104px; text-shadow: 7px 7px 0 var(--pink); }
+  .sub { font-size: 36px; text-align: center; line-height: 1.3; background: #fff; border: 4px solid var(--cobalt); border-radius: 999px; padding: 8px 30px; box-shadow: 5px 5px 0 var(--cobalt); }
+  .card { background: #fff; border: 5px solid var(--cobalt); border-radius: 34px; box-shadow: 10px 10px 0 var(--pink); width: 100%; }
+
+  /* game tiles, same colors as the site */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .tile { border-radius: 16px; min-height: 118px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; text-align: center; padding: 10px 6px; }
+  .tile .k { font-size: 16px; letter-spacing: .06em; text-transform: uppercase; opacity: .85; }
+  .tile .v { font-family: "Bagel Fat One", sans-serif; font-size: 34px; line-height: 1; }
+  .tile .ar { font-size: 30px; line-height: 1; font-weight: 700; }
+  .hit { background: var(--hit); color: var(--hit-ink); } .near { background: var(--near); color: var(--near-ink); }
+  .off { background: var(--off); color: var(--off-ink); box-shadow: inset 0 0 0 2px #dfe3f0; }
+
+  /* footer: slide dots + swipe hint */
+  .foot { position: absolute; left: 0; right: 0; bottom: 70px; display: flex; justify-content: center; align-items: center; gap: 14px; }
+  .foot i { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--cobalt); }
+  .foot i.on { background: var(--pink); width: 46px; border-radius: 999px; }
+  .swipe { position: absolute; right: 80px; bottom: 34px; font-size: 30px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 8px 24px; box-shadow: 4px 4px 0 var(--navy); }
+
+  /* slide 1: cover */
+  .kicker { font-family: "Bagel Fat One", sans-serif; font-size: 76px; line-height: 1; color: #fff; background: var(--cobalt); border: 6px solid #fff;
+    border-radius: 999px; padding: 18px 54px 26px; box-shadow: 10px 10px 0 var(--pink), 0 0 0 5px var(--cobalt); transform: rotate(-3deg); margin-bottom: 40px; }
+  .slide-1 .title { font-size: 80px; line-height: 1; text-shadow: 6px 6px 0 var(--pink); }
+  /* bottom-anchored: the details pill sits level with the highlight on the bottom-left bubble (y ≈ 1213) */
+  .slide-1 .page { gap: 48px; justify-content: flex-end; padding: 60px 80px 126px; }
+  .slide-1 .title { margin-top: 6px; margin-bottom: 22px; }   /* lifts the headline and everything above it; the details pill stays put */
+  .slide-1 .brand { font-size: 40px; }
+  .board { padding: 26px 30px 30px; position: relative; display: flex; flex-direction: column; gap: 12px; }
+  .brand { font-family: "Bagel Fat One", sans-serif; font-size: 50px; color: var(--cobalt); line-height: 1; }
+  .board .new { position: absolute; top: -62px; left: -34px; width: 140px; height: 140px; display: grid; place-items: center; transform: rotate(12deg);
+    font-family: "Bagel Fat One", sans-serif; font-size: 36px; color: var(--cobalt); background: var(--pink);
+    clip-path: polygon(50% 0, 61% 14%, 79% 9%, 82% 27%, 99% 33%, 90% 50%, 99% 67%, 82% 73%, 79% 91%, 61% 86%, 50% 100%, 39% 86%, 21% 91%, 18% 73%, 1% 67%, 10% 50%, 1% 33%, 18% 27%, 21% 9%, 39% 14%); }
+  .bhead, .brow { display: grid; grid-template-columns: 290px 1fr; gap: 16px; align-items: center; }
+  .bhead { font-size: 19px; color: #4A5680; letter-spacing: .05em; text-transform: uppercase; }
+  .cols { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .bhead .cols i { font-style: normal; text-align: center; font-size: 16px; }
+  .brow .cols i { font-style: normal; height: 74px; border-radius: 14px; display: grid; place-items: center; font-size: 34px; font-weight: 700; }
+  .brow .g { display: flex; flex-direction: column; line-height: 1.05; }
+  .brow .g b { font-family: "Bagel Fat One", sans-serif; font-weight: 400; font-size: 40px; color: var(--cobalt); }
+  .brow .g small { font-size: 24px; color: #4A5680; }
+  .brow.solved .g b { letter-spacing: .1em; }
+  .brow .g small.win { color: #fff; background: var(--hit-ink); border-radius: 999px; padding: 2px 12px; align-self: flex-start; margin-top: 4px; font-size: 22px; }
+  .brow.solved .cols i { box-shadow: 0 0 0 3px var(--hit-ink) inset; }
+  .mystery { padding: 34px 40px 36px; display: flex; flex-direction: column; gap: 18px; align-items: center; }
+  .mystery .q { font-family: "Bagel Fat One", sans-serif; font-size: 92px; color: var(--cobalt); letter-spacing: .12em; line-height: 1; text-shadow: 5px 5px 0 var(--pale-pink); }
+  .mystery .lbl { font-size: 26px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 4px 20px; }
+  .mystery .tiles { width: 100%; }
+  .mystery .tile { min-height: 64px; }
+  .mystery .row2 .tile { opacity: .55; }
+
+  /* slide 2 */
+  .guess { padding: 30px 32px 32px; display: flex; flex-direction: column; gap: 18px; }
+  .guess .head { display: flex; align-items: baseline; gap: 14px; }
+  .guess .head .lbl { font-size: 24px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 3px 16px; }
+  .guess .head .song { font-family: "Bagel Fat One", sans-serif; font-size: 44px; color: var(--cobalt); }
+  .guess .head .by { font-size: 30px; color: #4A5680; }
+  .legend { padding: 26px 34px; display: grid; grid-template-columns: auto 1fr; gap: 16px 24px; align-items: center; }
+  .legend .sw { width: 120px; height: 62px; border-radius: 14px; display: grid; place-items: center; font-family: "Bagel Fat One", sans-serif; font-size: 34px; }
+  .legend .arw { background: var(--pale-pink); color: var(--cobalt); }
+  .legend .txt { font-size: 32px; line-height: 1.15; }
+  .legend .txt small { display: block; font-size: 23px; color: #4A5680; }
+
+  /* slide 3 */
+  .always { display: flex; align-items: center; gap: 16px; font-size: 34px; background: #fff; border: 4px solid var(--cobalt); border-radius: 999px; padding: 8px 30px 8px 12px; box-shadow: 5px 5px 0 var(--cobalt); }
+  .always .ic { width: 58px; height: 58px; border-radius: 50%; background: var(--pale-pink); display: grid; place-items: center; }
+  .always .ic svg, .chipi .ic svg { width: 66%; height: 66%; overflow: visible; }
+  .groups { display: grid; grid-template-columns: 1fr; gap: 26px; width: 100%; }
+  .group { padding: 24px 28px 28px; }
+  .group h3 { margin: 0 0 16px; font-family: "Bagel Fat One", sans-serif; font-weight: 400; font-size: 40px; color: var(--cobalt); display: flex; align-items: center; gap: 14px; }
+  .group h3 span { font-family: "Righteous", sans-serif; font-size: 24px; color: var(--navy); background: var(--lemon); border-radius: 999px; padding: 2px 16px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; }
+  .chipi { display: flex; align-items: center; gap: 10px; background: var(--pale-pink); border-radius: 999px; padding: 6px 20px 6px 6px; font-size: 26px; }
+  .chipi .ic { width: 46px; height: 46px; border-radius: 50%; background: #fff; display: grid; place-items: center; }
+  .week { display: flex; align-items: flex-end; gap: 12px; }
+  .week div { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 22px; }
+  .week b { display: block; width: 46px; border-radius: 10px 10px 4px 4px; background: var(--cobalt); border: 3px solid var(--cobalt); }
+  .week .lab { font-size: 26px; padding: 0 6px; }
+
+  /* slide 4 */
+  .time { padding: 40px 40px 42px; display: flex; align-items: center; gap: 40px; }
+  .clock { width: 230px; height: 230px; flex: none; }
+  .time .big { font-family: "Bagel Fat One", sans-serif; font-size: 110px; color: var(--cobalt); line-height: .95; text-shadow: 5px 5px 0 var(--pale-pink); }
+  .time .mid { font-family: "Bagel Fat One", sans-serif; font-size: 52px; color: var(--pink); line-height: 1.05; -webkit-text-stroke: 2px var(--cobalt); }
+  .time .note { font-size: 26px; color: #4A5680; margin-top: 10px; }
+  .perks { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .perks span { font-size: 30px; background: #fff; border: 4px solid var(--cobalt); border-radius: 999px; padding: 6px 24px; box-shadow: 4px 4px 0 var(--cobalt); }
+  .link { font-family: "Bagel Fat One", sans-serif; font-size: 74px; color: #fff; background: var(--cobalt); border-radius: 999px; padding: 12px 56px 18px; box-shadow: 8px 8px 0 var(--navy); }
+  .bio { font-size: 32px; }
+</style></head>
+<body>
+<div class="deco">
+  <i class="tone t1"></i><i class="tone t2"></i><i class="dot d1"></i><i class="dot d2"></i><i class="bub b1"></i><i class="bub sky b2"></i>
+  <i class="spark s1"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+  <i class="spark s2"><svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12 17 13 13 17 12 24 11 17 7 13 0 12 7 11 11 7 12 0Z"/></svg></i>
+</div>
+<div class="page" id="page"></div>
+<div class="foot" id="foot"></div>
+<script src="clue-icons.js"></script>
+<script>
+const n = Math.min(4, Math.max(1, Number(new URLSearchParams(location.search).get("slide")) || 1));
+const tile = (st, k, v, ar = "") => `<div class="tile ${st}"><span class="k">${k}</span><span class="v">${v}</span>${ar ? `<span class="ar">${ar}</span>` : ""}</div>`;
+const chip = id => { const names = { members: "Members", wins: "Music show wins", cover: "Cover color", views: "MV views", label: "Label",
+  comeback: "Comeback no.", gap: "Comeback gap", year: "Release year", first: "First letter", letters: "Title letters", length: "Song length" };
+  return `<span class="chipi"><span class="ic">${icon(id)}</span>${names[id]}</span>`; };
+
+const SLIDES = {
+  // Cover: real game feedback for three guesses against a hidden answer (Artist, Members, Year, First letter, Length).
+  // Attention flow: hook pill -> gameplay board -> headline -> details.
+  1: `<div class="brand">KueDrop</div><span class="kicker">Wordle, but for K-pop</span>
+    <div class="card board"><span class="new">NEW!</span>
+      <div class="bhead"><span>Guess</span><span class="cols">${["Artist", "Members", "Year", "1st letter", "Length"].map(x => `<i>${x}</i>`).join("")}</span></div>
+      ${[["Magnetic", "ILLIT", "o o↑ o↓ o← o↑"], ["Dynamite", "BTS", "o o↑ n↓ n→ n↑"], ["FANCY", "TWICE", "h h h h n↓"], ["? ? ?", "", "h h h h h"]]
+        .map(([t, a, fb], i) => `<div class="brow${i === 3 ? " solved" : ""}"><span class="g"><b>${t}</b>${a ? `<small>${a}</small>` : `<small class="win">Solved in 4!</small>`}</span>
+          <span class="cols">${fb.split(" ").map(x => `<i class="${{ h: "hit", n: "near", o: "off" }[x[0]]}">${x.slice(1)}</i>`).join("")}</span></div>`).join("")}
+    </div>
+    <div class="title">Guess the K-pop song<br>of the day</div>
+    <div class="sub">A new mystery song every day · 8 guesses · free</div>`,
+  2: `<span class="chip">HOW TO PLAY</span>
+    <div class="title">Every guess<br>gives you clues</div>
+    <div class="card guess"><div class="head"><span class="lbl">YOUR GUESS</span><span class="song">Ditto</span><span class="by">NewJeans</span></div>
+      <div class="tiles">${tile("off", "Artist", `<span style="font-size:24px">NewJeans</span>`)}${tile("hit", "Members", "5")}${tile("off", "Year", "2022", "↓")}${tile("near", "First letter", "D", "←")}${tile("off", "Length", "3:05", "↑")}</div></div>
+    <div class="card legend">
+      <div class="sw hit"></div><div class="txt">Exact match</div>
+      <div class="sw near"></div><div class="txt">Close<small>like 1 year off, or 1 member off</small></div>
+      <div class="sw off"></div><div class="txt">Not it</div>
+      <div class="sw arw">↑ ↓</div><div class="txt">The answer is higher / lower<small>later year, more members, longer song…</small></div>
+      <div class="sw arw">← →</div><div class="txt">The answer's letter is earlier / later in A–Z</div>
+    </div>`,
+  3: `<span class="chip">HOW TO PLAY</span>
+    <div class="title">The clues change<br>every day</div>
+    <span class="always"><span class="ic">${icon("artist")}</span>Artist, always on</span>
+    <div class="groups">
+      <div class="card group"><h3>+ 2 fan clues <span>picked daily</span></h3><div class="chips">${["members", "wins", "cover", "comeback", "gap", "views", "label"].map(chip).join("")}</div></div>
+      <div class="card group"><h3>+ 2 song stats <span>picked daily</span></h3><div class="chips">${["year", "first", "letters", "length"].map(chip).join("")}</div></div>
+    </div>
+    <div class="sub">Easier on Monday → harder by Sunday</div>`,
+  4: `<span class="chip">A NEW CASE EVERY DAY</span>
+    <div class="title">Play daily at</div>
+    <div class="card time">
+      <svg class="clock" viewBox="0 0 120 120"><circle cx="60" cy="60" r="54" fill="var(--pale-pink)" stroke="var(--cobalt)" stroke-width="7"/>
+        ${[...Array(12)].map((_, i) => { const a = i * Math.PI / 6; return `<circle cx="${60 + 43 * Math.sin(a)}" cy="${60 - 43 * Math.cos(a)}" r="${i % 3 ? 2.5 : 4}" fill="var(--cobalt)"/>`; }).join("")}
+        <path d="M60 60 L60 30" stroke="var(--cobalt)" stroke-width="7" stroke-linecap="round"/><path d="M60 60 L48 81" stroke="var(--pink)" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="60" cy="60" r="6" fill="var(--cobalt)"/></svg>
+      <div><div class="big">7 AM PT</div><div class="mid">midnight KST</div><div class="note">Win every day to grow your streak</div></div></div>
+    <div class="perks"><span>Free</span><span>No sign-up</span><span>Girl & boy group modes</span><span>Practice mode</span></div>
+    <div class="link">kuedrop.com</div><div class="bio">Link in bio</div>`,
+};
+document.getElementById("page").innerHTML = SLIDES[n];
+document.body.classList.add("slide-" + n);
+document.getElementById("foot").innerHTML = [1, 2, 3, 4].map(i => `<i class="${i === n ? "on" : ""}"></i>`).join("");
+if (n < 4) document.body.insertAdjacentHTML("beforeend", `<span class="swipe">Swipe →</span>`);
+</script>
+</body></html>
